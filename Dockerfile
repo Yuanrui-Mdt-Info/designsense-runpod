@@ -1,17 +1,28 @@
-FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
-RUN apt install git python3 python3-venv ...
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-# 克隆最新版 webui（你决定 tag）
-RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
-RUN cd stable-diffusion-webui && git checkout v1.10.1
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip git libglib2.0-0 libgl1 libgoogle-perftools-dev && \
+    pip install --upgrade pip
 
-# 复制你的 rp_handler.py 与 start.sh
-COPY rp_handler.py /
-COPY start.sh /
+# 安装最稳 torch
+RUN pip install torch==2.3.1 torchvision torchaudio \
+    --index-url https://download.pytorch.org/whl/cu121
 
-# 安装 WebUI 必要的依赖
-RUN pip install -r requirements_versions.txt
+# 拉最新 A1111 稳定版
+WORKDIR /workspace
+RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui webui
+
+WORKDIR /workspace/webui
+RUN pip install -r requirements.txt
+
 RUN pip install runpod==1.7.13 requests==2.32.5
+
+# 放 rp_handler
+COPY rp_handler.py .
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 CMD ["/start.sh"]
