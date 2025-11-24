@@ -6,8 +6,9 @@
 
 ## 功能特性
 
-- 🚀 基于 NVIDIA CUDA 12.1 & PyTorch 2.3.1 构建
-- 🎨 集成 AUTOMATIC1111 Stable Diffusion WebUI
+- 🚀 基于 NVIDIA CUDA 12.1 & PyTorch 2.1.0 构建
+- 🎨 集成 AUTOMATIC1111 Stable Diffusion WebUI (v1.10.1)
+- 🐍 推荐使用 Python 3.10.x 以获得最佳兼容性
 - 🔌 支持多种 API 操作：
   - `txt2img` (文生图)
   - `img2img` (图生图)
@@ -15,7 +16,67 @@
   - `LoRA`
   - 模型管理与选项配置
 
-## 🛠️ 构建 Docker 镜像
+## 🧪 在 RunPod Pod 上快速调试（推荐）
+
+如果你想快速调试而不构建 Docker 镜像，可以直接在 RunPod Pod 上运行：
+
+### 1. 启动 Pod
+1. 在 RunPod Console 创建一个 GPU Pod
+2. 选择镜像：`pytorch/pytorch:2.1.2-cuda12.1-cudnn8-runtime` (Python 3.10)
+3. 选择 GPU：RTX 3090 或 RTX 4090（便宜且够用）
+4. 启动 Pod，通过 SSH 或 Jupyter Lab 连接
+
+### 2. 运行环境配置脚本
+将项目代码上传到 Pod，然后运行：
+
+```bash
+cd /workspace/你的项目目录
+chmod +x setup_dev.sh
+./setup_dev.sh
+```
+
+`setup_dev.sh` 会自动完成：
+- 安装系统依赖和 Python 包
+- 克隆 Stable Diffusion WebUI v1.10.1
+- 下载 SD v1.5 模型（约 4GB）
+- 配置运行环境
+
+### 3. 启动服务
+```bash
+cd /workspace/webui
+./start.sh
+```
+
+看到 `Model loaded in ...s` 和 `WebUI API Service is ready` 即表示成功！
+
+### 4. 测试 API
+在 Pod 终端创建测试脚本：
+
+```bash
+cat > test_txt2img.py << 'EOF'
+import requests
+
+url = "http://127.0.0.1:3000/sdapi/v1/txt2img"
+payload = {
+    "prompt": "a cute cat, high quality, 8k",
+    "steps": 20,
+    "width": 512,
+    "height": 512
+}
+
+response = requests.post(url, json=payload, timeout=120)
+if response.status_code == 200:
+    print("Success! Image generated.")
+else:
+    print(f"Error: {response.status_code}")
+EOF
+
+python test_txt2img.py
+```
+
+## 🛠️ 构建 Docker 镜像（生产部署）
+
+当你在 Pod 上调试完成后，可以构建镜像用于 Serverless 部署。
 
 ### 1. 构建命令
 
@@ -26,6 +87,8 @@
 docker build -t your-username/sd-runpod-serverless:v1 .
 ```
 
+**注意**：镜像中**不包含模型文件**，模型需要通过 Network Volume 挂载。
+
 ### 2. 推送镜像
 
 将镜像推送到 Docker Hub（或其他容器镜像仓库），以便 RunPod 拉取：
@@ -34,29 +97,45 @@ docker build -t your-username/sd-runpod-serverless:v1 .
 docker push your-username/sd-runpod-serverless:v1
 ```
 
-## 🚀 部署到 RunPod
+## 🚀 部署到 RunPod Serverless
+
+### 0. 准备模型文件（Network Volume）
+
+1. 在 RunPod Console 导航到 **Storage** -> **Network Volumes**
+2. 创建一个新的 Network Volume（建议 20GB+）
+3. 通过 Pod 挂载这个 Volume，上传模型文件到 `models/Stable-diffusion/` 目录
+
+**推荐模型**：
+- **SD v1.5**（快速、兼容性好）：
+  ```bash
+  wget -O model.safetensors https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+  ```
+- **SDXL Turbo**（高质量、1024×1024）：
+  ```bash
+  wget -O sd_xl_turbo.safetensors https://huggingface.co/stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors
+  ```
 
 ### 1. 创建 Template (模板)
 
-1. 登录 [RunPod Console](https://www.runpod.io/console/serverless)。
-2. 导航到 **Templates** -> **New Template**。
+1. 登录 [RunPod Console](https://www.runpod.io/console/serverless)
+2. 导航到 **Templates** -> **New Template**
 3. 填写配置：
-   - **Template Name**: 例如 `SD WebUI Serverless`
+   - **Template Name**: 例如 `SD WebUI Serverless v1.10.1`
    - **Container Image**: `your-username/sd-runpod-serverless:v1` (你推送的镜像地址)
-   - **Container Disk**: 建议至少 `20 GB` (取决于你需要下载多少模型)
+   - **Container Disk**: 建议 `10 GB` (镜像本身不大)
    - **Docker Command**: 留空 (使用 Dockerfile 默认 CMD)
-   - **Environment Variables** (可选):
-     - `MODEL_PATH`: 指定启动时的 Checkpoint 路径 (默认: `models/Stable-diffusion/model.ckpt`)
-4. 点击 **Save Template**。
+   - **Volume Mount Path**: `/workspace/webui/models/Stable-diffusion`
+   - **Volume Path**: 选择你上传了模型的 Network Volume
+4. 点击 **Save Template**
 
 ### 2. 创建 Serverless Endpoint
 
-1. 导航到 **Serverless** -> **New Endpoint**。
-2. 选择刚才创建的 Template。
+1. 导航到 **Serverless** -> **New Endpoint**
+2. 选择刚才创建的 Template
 3. 配置 GPU：
-   - 选择适合的 GPU 类型 (如 RTX 3090, A4000 等)。
-   - 设置 Min/Max Workers。
-4. 点击 **Create** 部署。
+   - 选择适合的 GPU 类型 (如 RTX 3090, A4000 等)
+   - 设置 Min/Max Workers（建议 Min: 0, Max: 3）
+4. 点击 **Create** 部署
 
 ## 📡 API 调用说明
 
@@ -108,13 +187,42 @@ Worker 接收的 `input` 对象包含 `api_name` 和对应的参数。
 - `getControlNetDetect`: POST `/controlnet/detect`
 - `getLora`: GET `/sdapi/v1/loras`
 
+## 🐛 常见问题
+
+### Q: 为什么推荐 Python 3.10 而不是 3.11/3.12？
+A: Stable Diffusion 生态（PyTorch, xformers 等）对 Python 3.10 的支持最好，预编译包最全，可以避免编译失败的问题。
+
+### Q: 为什么会提示 `no module 'xformers'`？
+A: xformers 是可选的加速库，没有它也能运行，只是速度会慢 20-30%。如果需要安装：`pip install xformers`。
+
+### Q: SD v1.5 和 SDXL Turbo 该选哪个？
+A: 
+- **SD v1.5**: 速度快（512×512），显存占用小（4-6GB），插件生态丰富，**推荐调试和快速出图**
+- **SDXL Turbo**: 质量高（1024×1024），显存占用大（8-12GB），**推荐生产环境追求质量**
+
+### Q: 如何在 Pod 上持久化数据？
+A: RunPod Pod 的 `/workspace` 目录默认是持久化的，即使停止 Pod 再启动，数据依然保留。
+
 ## 💻 本地开发/调试
 
 如果你有 NVIDIA GPU，可以在本地运行测试：
 
 ```bash
-docker run --gpus all -p 3000:3000 your-username/sd-runpod-serverless:v1
+docker run --gpus all -p 3000:3000 \
+  -v /path/to/your/models:/workspace/webui/models/Stable-diffusion \
+  your-username/sd-runpod-serverless:v1
 ```
 
-容器启动后，它会尝试连接 RunPod 服务器。由于没有真实的 RunPod 环境，你可以手动调用 `rp_handler.py` 中的逻辑或进入容器调试。
+容器启动后，访问 `http://localhost:3000/docs` 查看 API 文档。
 
+## 📝 技术栈
+
+- **Base Image**: `nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04`
+- **Python**: 3.10.x (推荐)
+- **PyTorch**: 2.1.0 (CUDA 11.8)
+- **WebUI Version**: AUTOMATIC1111 v1.10.1
+- **RunPod SDK**: 1.7.13
+
+## 📄 License
+
+MIT License

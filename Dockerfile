@@ -31,9 +31,13 @@ RUN pip install dctorch jsonmerge clean-fid resize-right torchdiffeq kornia
 RUN pip install -r requirements_versions.txt
 RUN pip install runpod==1.7.13 requests==2.32.5
 
-# 放 rp_handler
-COPY rp_handler.py .
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# 创建模型目录（挂载点，实际模型会从 Network Volume 挂载进来）
+RUN mkdir -p models/Stable-diffusion
 
-CMD ["/start.sh"]
+# 复制业务代码
+COPY rp_handler.py .
+COPY start.sh .
+RUN chmod +x start.sh
+
+# 注意：这里改成相对路径，因为 WORKDIR 已经是 /workspace/webui
+CMD ["./start.sh"]
