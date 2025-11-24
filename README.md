@@ -108,7 +108,7 @@ docker push your-username/sd-runpod-serverless:v1
 **推荐模型**：
 - **SD v1.5**（快速、兼容性好）：
   ```bash
-  wget -O model.safetensors https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
+  wget -O sd15.safetensors https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors
   ```
 - **SDXL Turbo**（高质量、1024×1024）：
   ```bash

@@ -9,17 +9,15 @@ echo "Starting WebUI API"
 
 cd /workspace/webui
 
-# 使用环境变量设置模型路径，如果未设置则使用默认值
-# MODEL_PATH="${MODEL_PATH:-models/Stable-diffusion/model.ckpt}"
+# 使用环境变量设置模型路径，如果未设置则让 WebUI 自动寻找模型
+MODEL_PATH="${MODEL_PATH:-}"
 
 # 启动 WebUI
-# 1. 去掉 --ckpt 参数，让 WebUI 自动在 models/Stable-diffusion 下寻找模型
-# 2. 将输出重定向到 webui.log 以便调试
-# 3. 后台运行 (&)
 python -u webui.py \
     --skip-python-version-check \
     --skip-torch-cuda-test \
     --skip-install \
+    ${MODEL_PATH:+--ckpt "$MODEL_PATH"} \
     --opt-sdp-attention \
     --disable-safe-unpickle \
     --port 3000 \
