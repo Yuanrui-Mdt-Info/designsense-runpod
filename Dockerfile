@@ -16,8 +16,15 @@ WORKDIR /workspace
 RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui webui
 
 WORKDIR /workspace/webui
-RUN pip install -r requirements.txt
+RUN mkdir -p repositories && \
+    git clone https://github.com/Stability-AI/stablediffusion.git repositories/stable-diffusion-stability-ai && \
+    git clone https://github.com/Stability-AI/generative-models.git repositories/generative-models && \
+    git clone https://github.com/crowsonkb/k-diffusion.git repositories/k-diffusion && \
+    git clone https://github.com/sczhou/CodeFormer.git repositories/CodeFormer && \
+    git clone https://github.com/salesforce/BLIP.git repositories/BLIP
 
+# 安装依赖
+RUN pip install -r requirements.txt
 RUN pip install runpod==1.7.13 requests==2.32.5
 
 # 放 rp_handler
