@@ -13,7 +13,9 @@ RUN pip install torch==2.3.1 torchvision torchaudio \
 
 # 拉最新 A1111 稳定版
 WORKDIR /workspace
-RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui webui
+RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui webui && \
+    cd webui && \
+    git checkout v1.10.1
 
 WORKDIR /workspace/webui
 RUN mkdir -p repositories && \
