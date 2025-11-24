@@ -50,10 +50,25 @@ fi
 python3 -m pip install --upgrade pip
 
 # 安装 WebUI 核心依赖 (使用 requirements_versions.txt 更稳)
+# 强制安装 dctorch 解决 k-diffusion 的依赖问题
+# 强制安装 jsonmerge 解决其他潜在依赖问题
+pip install dctorch jsonmerge clean-fid resize-right torchdiffeq kornia
 pip install -r requirements_versions.txt
 pip install runpod requests
 
-# 6. 复制业务代码
+# 6. 下载模型文件 (v1.5)
+echo "Downloading Stable Diffusion v1.5 Model..."
+mkdir -p models/Stable-diffusion
+MODEL_FILE="models/Stable-diffusion/model.safetensors"
+if [ ! -f "$MODEL_FILE" ]; then
+    echo "Downloading model from HuggingFace..."
+    wget -O "$MODEL_FILE" "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+    echo "Model downloaded."
+else
+    echo "Model already exists, skipping download."
+fi
+
+# 7. 复制业务代码
 echo "Copying handler and start script..."
 cp "$PROJECT_ROOT/rp_handler.py" /workspace/webui/
 cp "$PROJECT_ROOT/start.sh" /workspace/webui/
