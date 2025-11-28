@@ -1,5 +1,6 @@
 import runpod
-from diffusers import DiffusionPipeline
+# from diffusers import DiffusionPipeline
+from diffusers import QwenImageEditPipeline
 from diffusers.utils import load_image
 import torch
 from io import BytesIO
@@ -8,7 +9,8 @@ from PIL import Image
 
 
 # Load model on startup - 使用 bfloat16 更稳定
-pipe = DiffusionPipeline.from_pretrained(
+# pipe = DiffusionPipeline.from_pretrained(
+pipe = QwenImageEditPipeline.from_pretrained(
     "Qwen/Qwen-Image-Edit-2509", 
     torch_dtype=torch.bfloat16,  # bfloat16 比 float16 更稳定
     trust_remote_code=True,
