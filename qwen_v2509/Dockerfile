@@ -2,7 +2,6 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV HF_HOME=/workspace/huggingface
 
 # 安装系统依赖
 RUN apt-get update && \
@@ -26,10 +25,6 @@ RUN mkdir -p /workspace/huggingface
 
 # 复制 handler 代码
 COPY rp_handler.py .
-
-# 设置环境变量
-ENV MODEL_PATH=Qwen/Qwen-Image-Edit-2509
-ENV PRELOAD_MODEL=true
 
 CMD ["python", "rp_handler.py"]
 
