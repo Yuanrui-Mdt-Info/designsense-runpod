@@ -21,7 +21,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 创建 HuggingFace 缓存目录（用于挂载网络卷）
-RUN mkdir -p /workspace/huggingface
+# RUN mkdir -p /workspace/huggingface
 
 # 复制 handler 代码
 COPY rp_handler.py .
