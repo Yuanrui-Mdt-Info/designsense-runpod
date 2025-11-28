@@ -14,7 +14,7 @@ RUN apt-get update && \
 WORKDIR /workspace
 
 # 安装 PyTorch (CUDA 12.1)
-RUN pip install torch==2.2.0 torchvision==0.17.0 \
+RUN pip install torch==2.5.1 torchvision==0.20.1 \
     --index-url https://download.pytorch.org/whl/cu121
 
 # 安装 Python 依赖
