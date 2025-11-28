@@ -52,7 +52,7 @@ docker push your-registry/qwen-image-edit-2509:v1
 |------|--------|------|
 | MODEL_PATH | Qwen/Qwen-Image-Edit-2509 | 模型路径或 HuggingFace 模型 ID |
 | PRELOAD_MODEL | true | 是否在启动时预加载模型 |
-| HF_HOME | /workspace/huggingface | HuggingFace 缓存目录 |
+| HF_HOME | /runpod-volume/huggingface| HuggingFace 缓存目录(runpod-volume为runpod网络卷的默认位置) |
 
 ## 注意事项
 
