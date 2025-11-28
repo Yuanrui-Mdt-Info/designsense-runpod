@@ -1,4 +1,4 @@
-diffusers>=0.31.0
+git+https://github.com/huggingface/diffusers.git
 transformers>=4.51.3
 accelerate>=0.26.0
 Pillow
