@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -y python3 python3-pip git libglib2.0-0 libgl1 libgoogle-perftools-dev wget && \
+    ln -sf /usr/bin/python3 /usr/bin/python && \
     pip install --upgrade pip
 
 # 安装最稳 torch
