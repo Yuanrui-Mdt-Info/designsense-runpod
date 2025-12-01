@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 import runpod
 # from diffusers import DiffusionPipeline
 from diffusers import QwenImageEditPipeline
@@ -11,13 +12,28 @@ import base64
 from PIL import Image
 
 
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"Current device: {torch.cuda.current_device()}")
+print(f"GPU: {torch.cuda.get_device_name(0)}")
+print(f"GPU Memory: {torch.cuda.memory_allocated()/1024**3:.2f} GB / {torch.cuda.get_device_properties(0).total_memory/1024**3:.2f} GB")
+
+
 # Load model on startup - 使用 bfloat16 更稳定
 # pipe = DiffusionPipeline.from_pretrained(
 pipe = QwenImageEditPipeline.from_pretrained(
     "Qwen/Qwen-Image-Edit-2509", 
     torch_dtype=torch.bfloat16,  # bfloat16 比 float16 更稳定
-    trust_remote_code=True,
 ).to("cuda")
+
+
+# 添加内存优化
+try:
+    pipe.enable_xformers_memory_efficient_attention()
+    print("xformers enabled")
+except Exception as e:
+    print(f"xformers not available: {e}")
+    pipe.enable_attention_slicing()
+    print("attention slicing enabled")
 
 
 def handler(event):
