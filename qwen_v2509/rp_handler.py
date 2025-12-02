@@ -36,10 +36,27 @@ except Exception as e:
     print("attention slicing enabled")
 
 
+def list_volume():
+    root = "/runpod-volume"
+    result = {}
+    for base, dirs, files in os.walk(root):
+        rel = base[len(root):] or "/"
+        result[rel] = {"dirs": dirs, "files": files}
+    return result
+
+
 def handler(event):
     """
     Runpod handler function. Receives job input and returns output.
     """
+    
+    # debug code:
+    try:
+        if event.get("cmd") == "list-volume":
+            return list_volume()
+    except Exception as e:
+        pass
+    
     try:
         input_data = event["input"]
         prompt = input_data.get("prompt", "Enhance the image")
