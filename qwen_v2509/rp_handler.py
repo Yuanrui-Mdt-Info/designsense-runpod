@@ -4,61 +4,19 @@
 import os
 import runpod
 import torch
-from huggingface_hub import snapshot_download
 from diffusers import QwenImageEditPipeline
 from diffusers.utils import load_image
 from io import BytesIO
 import base64
 from PIL import Image
 
-# -------------------------------
-# 1. 配置模型缓存位置（卷）
-# -------------------------------
-
-HF_HOME = os.environ.get("HF_HOME", "/runpod-volume/huggingface")
-MODEL_DIR = os.path.join(HF_HOME, "Qwen-Image-Edit-2509")   # 本地解压目录
-REPO_ID = "Qwen/Qwen-Image-Edit-2509"
-
-os.makedirs(HF_HOME, exist_ok=True)
-
-print(f"[Init] HF_HOME = {HF_HOME}")
-print(f"[Init] MODEL_DIR = {MODEL_DIR}")
+# HF_HOME 环境变量控制缓存位置
+print(f"[Init] HF_HOME = {os.environ.get('HF_HOME', '~/.cache/huggingface')}")
 
 
-# -------------------------------
-# 2. 预下载模型到卷（一次性）
-# -------------------------------
-
-def preload_model():
-    if os.path.exists(MODEL_DIR):
-        print("[Init] Model already exists in volume, skip downloading.")
-        return MODEL_DIR
-
-    print("[Init] Downloading model (first-time only)...")
-
-    # 下载到卷目录
-    snapshot_download(
-        repo_id=REPO_ID,
-        cache_dir=HF_HOME,
-        local_dir=MODEL_DIR,
-        local_dir_use_symlinks=False,
-        resume_download=True
-    )
-
-    print("[Init] Model downloaded to volume.")
-    return MODEL_DIR
-
-
-LOCAL_MODEL_PATH = preload_model()
-
-
-# -------------------------------
-# 3. 加载模型（不会触发下载）
-# -------------------------------
-
-print("[Init] Loading model from local volume...")
+print("[Init] Loading model...")
 pipe = QwenImageEditPipeline.from_pretrained(
-    LOCAL_MODEL_PATH,
+    "Qwen/Qwen-Image-Edit-2509",
     torch_dtype=torch.bfloat16,
 ).to("cuda")
 
@@ -70,10 +28,6 @@ except Exception:
     print("[Init] attention slicing enabled")
 
 
-# -------------------------------
-# 4. Debug: list /runpod-volume
-# -------------------------------
-
 def list_volume():
     root = "/runpod-volume"
     result = {}
@@ -83,9 +37,7 @@ def list_volume():
     return result
 
 
-# -------------------------------
-# 5. RunPod handler
-# -------------------------------
+# RunPod handler
 
 def handler(event):
     # Debug
