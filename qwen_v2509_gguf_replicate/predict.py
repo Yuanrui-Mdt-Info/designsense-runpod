@@ -94,7 +94,25 @@ class Predictor(BasePredictor):
 
     def _load_models(self):
         """预加载 GGUF 模型"""
-        from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
+        # 解决 ComfyUI-GGUF 目录名带横杠无法直接 import 的问题
+        gguf_path = os.path.join(COMFYUI_PATH, "custom_nodes", "ComfyUI-GGUF")
+        
+        try:
+            import importlib.util
+            # 动态加载 nodes.py
+            node_file = os.path.join(gguf_path, "nodes.py")
+            if not os.path.exists(node_file):
+                raise FileNotFoundError(f"Cannot find {node_file}")
+                
+            spec = importlib.util.spec_from_file_location("ComfyUI_GGUF_nodes", node_file)
+            gguf_nodes = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(gguf_nodes)
+            
+            UnetLoaderGGUF = gguf_nodes.UnetLoaderGGUF
+            DualCLIPLoaderGGUF = gguf_nodes.DualCLIPLoaderGGUF
+        except Exception as e:
+            print(f"Error loading GGUF nodes: {e}")
+            raise
 
         # 加载 UNet
         unet_loader = UnetLoaderGGUF()
