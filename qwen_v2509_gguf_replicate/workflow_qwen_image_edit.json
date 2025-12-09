@@ -1,0 +1,119 @@
+{
+  "last_node_id": 12,
+  "last_link_id": 12,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UnetLoaderGGUF",
+      "pos": [50, 50],
+      "size": [300, 60],
+      "properties": {},
+      "widgets_values": ["Qwen-Image-Edit-2509-Q4_K_M.gguf"]
+    },
+    {
+      "id": 2,
+      "type": "DualCLIPLoaderGGUF",
+      "pos": [50, 150],
+      "size": [300, 100],
+      "properties": {},
+      "widgets_values": [
+        "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+        "Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        "qwen_image"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "VAELoader",
+      "pos": [50, 300],
+      "size": [300, 60],
+      "properties": {},
+      "widgets_values": ["qwen-image-vae.safetensors"]
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [50, 400],
+      "size": [300, 100],
+      "properties": {},
+      "widgets_values": ["input.png", "image"]
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [400, 50],
+      "size": [300, 100],
+      "properties": {},
+      "widgets_values": ["Enhance the image quality"]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [400, 180],
+      "size": [300, 100],
+      "properties": {},
+      "widgets_values": ["blurry, low quality, distorted"]
+    },
+    {
+      "id": 7,
+      "type": "VAEEncode",
+      "pos": [400, 400],
+      "size": [200, 60],
+      "properties": {}
+    },
+    {
+      "id": 8,
+      "type": "KSampler",
+      "pos": [750, 150],
+      "size": [300, 300],
+      "properties": {},
+      "widgets_values": [
+        42,
+        "fixed",
+        28,
+        6.0,
+        "euler",
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 9,
+      "type": "VAEDecode",
+      "pos": [1100, 200],
+      "size": [200, 60],
+      "properties": {}
+    },
+    {
+      "id": 10,
+      "type": "SaveImage",
+      "pos": [1350, 200],
+      "size": [300, 300],
+      "properties": {},
+      "widgets_values": ["output"]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 8, 0, "MODEL"],
+    [2, 2, 0, 5, 0, "CLIP"],
+    [3, 2, 0, 6, 0, "CLIP"],
+    [4, 5, 0, 8, 1, "CONDITIONING"],
+    [5, 6, 0, 8, 2, "CONDITIONING"],
+    [6, 3, 0, 7, 1, "VAE"],
+    [7, 4, 0, 7, 0, "IMAGE"],
+    [8, 7, 0, 8, 3, "LATENT"],
+    [9, 3, 0, 9, 1, "VAE"],
+    [10, 8, 0, 9, 0, "LATENT"],
+    [11, 9, 0, 10, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1,
+      "offset": [0, 0]
+    }
+  },
+  "version": 0.4
+}
+

@@ -1,0 +1,57 @@
+# Cog 配置文件 - Qwen-Image-Edit-2509 GGUF (ComfyUI)
+# https://github.com/replicate/cog
+
+build:
+  gpu: true
+  cuda: "12.4"
+  python_version: "3.11"
+  
+  system_packages:
+    - git
+    - git-lfs
+    - wget
+    - curl
+    - libgl1-mesa-glx
+    - libglib2.0-0
+    - libsm6
+    - libxext6
+    - libxrender-dev
+
+  python_packages:
+    - torch==2.5.1
+    - torchvision==0.20.1
+    - torchaudio==2.5.1
+    - numpy<2
+    - pillow>=10.0.0
+    - aiohttp
+    - einops
+    - transformers>=4.44.0
+    - tokenizers>=0.19.0
+    - sentencepiece
+    - safetensors
+    - scipy
+    - tqdm
+    - psutil
+    - kornia>=0.7.0
+    - spandrel
+    - huggingface-hub>=0.25.0
+
+  run:
+    # 克隆 ComfyUI
+    - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.11.0/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
+    - git clone https://github.com/comfyanonymous/ComfyUI.git /ComfyUI
+    - pip install -r /ComfyUI/requirements.txt
+    
+    # 安装 ComfyUI-GGUF 自定义节点
+    - git clone https://github.com/city96/ComfyUI-GGUF.git /ComfyUI/custom_nodes/ComfyUI-GGUF
+    - pip install --upgrade gguf
+    
+    # 创建模型目录
+    - mkdir -p /ComfyUI/models/unet
+    - mkdir -p /ComfyUI/models/text_encoders
+    - mkdir -p /ComfyUI/models/vae
+    - mkdir -p /ComfyUI/input
+    - mkdir -p /ComfyUI/output
+
+predict: "predict.py:Predictor"
+
