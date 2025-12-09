@@ -36,7 +36,7 @@ MODELS = {
     "mmproj": {
         "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         "filename": "mmproj-F16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/clip/mmproj-F16.gguf",
+        "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
     },
     "vae": {
         "repo": "Qwen/Qwen-Image-Edit-2509",
@@ -119,7 +119,7 @@ class Predictor(BasePredictor):
         clip_loader = DualCLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
             clip_name1="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-            clip_name2="mmproj-F16.gguf",
+            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
             type="qwen_image",
         )[0]
 
