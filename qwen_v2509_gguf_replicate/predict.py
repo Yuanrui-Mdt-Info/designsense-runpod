@@ -34,14 +34,15 @@ MODELS = {
         "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
     },
     "mmproj": {
-        "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
-        "filename": "Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        # 修改：从 unsloth 下载，文件名改为 mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf
+        "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
+        "filename": "mmproj-F16.gguf ",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/mmproj-F16.gguf",
     },
     "vae": {
         "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
-        "filename": "qwen-image-vae.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/vae/qwen-image-vae.safetensors",
+        "filename": "diffusion_pytorch_model.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/vae/diffusion_pytorch_model.safetensors",
     },
 }
 
@@ -109,7 +110,7 @@ class Predictor(BasePredictor):
         clip_loader = DualCLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
             clip_name1="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+            clip_name2="mmproj-F16.gguf",
             type="qwen_image",
         )[0]
 
@@ -117,7 +118,7 @@ class Predictor(BasePredictor):
         from nodes import VAELoader
 
         vae_loader = VAELoader()
-        self.vae = vae_loader.load_vae(vae_name="qwen-image-vae.safetensors")[0]
+        self.vae = vae_loader.load_vae(vae_name="diffusion_pytorch_model.safetensors")[0]
 
     def predict(
         self,
