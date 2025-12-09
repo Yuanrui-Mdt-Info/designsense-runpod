@@ -83,9 +83,6 @@ class Predictor(BasePredictor):
         import nodes
         import comfy.model_management as model_management
 
-        # 添加 GGUF 节点
-        from ComfyUI.custom_nodes import ComfyUI_GGUF
-
         self.folder_paths = folder_paths
         self.nodes = nodes
         self.model_management = model_management
