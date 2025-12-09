@@ -49,7 +49,7 @@ build:
     
     # 创建模型目录
     - mkdir -p /ComfyUI/models/unet
-    - mkdir -p /ComfyUI/models/text_encoders
+    - mkdir -p /ComfyUI/models/clip
     - mkdir -p /ComfyUI/models/vae
     - mkdir -p /ComfyUI/input
     - mkdir -p /ComfyUI/output

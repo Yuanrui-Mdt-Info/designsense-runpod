@@ -31,12 +31,12 @@ MODELS = {
     "text_encoder": {
         "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         "filename": "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+        "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
     },
     "mmproj": {
         "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         "filename": "mmproj-F16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/mmproj-F16.gguf",
+        "dest": f"{COMFYUI_PATH}/models/clip/mmproj-F16.gguf",
     },
     "vae": {
         "repo": "Qwen/Qwen-Image-Edit-2509",
