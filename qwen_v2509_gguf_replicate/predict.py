@@ -10,33 +10,38 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
+# 自动检测 ComfyUI 路径
+# 如果环境变量中有 COMFYUI_PATH 则使用，否则默认为 /ComfyUI (Replicate 环境)
+COMFYUI_PATH = os.environ.get("COMFYUI_PATH", "/ComfyUI")
+
 # 添加 ComfyUI 路径
-sys.path.insert(0, "/ComfyUI")
+if COMFYUI_PATH not in sys.path:
+    sys.path.insert(0, COMFYUI_PATH)
 
 from cog import BasePredictor, Input, Path as CogPath
 from PIL import Image
 
-# 模型文件信息
+# 模型文件信息 - 使用 COMFYUI_PATH 动态构建路径
 MODELS = {
     "unet": {
         "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
         "filename": "Qwen-Image-Edit-2509-Q4_K_M.gguf",
-        "dest": "/ComfyUI/models/unet/Qwen-Image-Edit-2509-Q4_K_M.gguf",
+        "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q4_K_M.gguf",
     },
     "text_encoder": {
         "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         "filename": "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-        "dest": "/ComfyUI/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
     },
     "mmproj": {
         "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
         "filename": "Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        "dest": "/ComfyUI/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
     },
     "vae": {
         "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
         "filename": "qwen-image-vae.safetensors",
-        "dest": "/ComfyUI/models/vae/qwen-image-vae.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/vae/qwen-image-vae.safetensors",
     },
 }
 
