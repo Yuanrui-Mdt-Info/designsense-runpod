@@ -44,6 +44,7 @@ build:
     
     # 安装 ComfyUI-GGUF 自定义节点
     - git clone https://github.com/city96/ComfyUI-GGUF.git /ComfyUI/custom_nodes/ComfyUI-GGUF
+    - ln -s /ComfyUI/custom_nodes/ComfyUI-GGUF /ComfyUI/custom_nodes/ComfyUI_GGUF
     - pip install --upgrade gguf
     
     # 创建模型目录

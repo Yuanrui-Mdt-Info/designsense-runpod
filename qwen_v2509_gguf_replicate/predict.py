@@ -94,25 +94,20 @@ class Predictor(BasePredictor):
 
     def _load_models(self):
         """预加载 GGUF 模型"""
-        # 解决 ComfyUI-GGUF 目录名带横杠无法直接 import 的问题
-        gguf_path = os.path.join(COMFYUI_PATH, "custom_nodes", "ComfyUI-GGUF")
+        # 注意：需要确保 ComfyUI/custom_nodes/ 下存在 ComfyUI_GGUF 软链接指向 ComfyUI-GGUF
+        # ln -s ComfyUI-GGUF ComfyUI_GGUF
         
+        # 尝试直接导入
         try:
-            import importlib.util
-            # 动态加载 nodes.py
-            node_file = os.path.join(gguf_path, "nodes.py")
-            if not os.path.exists(node_file):
-                raise FileNotFoundError(f"Cannot find {node_file}")
-                
-            spec = importlib.util.spec_from_file_location("ComfyUI_GGUF_nodes", node_file)
-            gguf_nodes = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(gguf_nodes)
-            
-            UnetLoaderGGUF = gguf_nodes.UnetLoaderGGUF
-            DualCLIPLoaderGGUF = gguf_nodes.DualCLIPLoaderGGUF
-        except Exception as e:
-            print(f"Error loading GGUF nodes: {e}")
-            raise
+            # 这里的 custom_nodes 是顶级包，因为 COMFYUI_PATH 在 sys.path 里
+            from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
+        except ImportError:
+            # 兼容性尝试：如果上面失败，尝试把 custom_nodes 加到路径
+            import sys
+            custom_nodes_path = os.path.join(COMFYUI_PATH, "custom_nodes")
+            if custom_nodes_path not in sys.path:
+                sys.path.append(custom_nodes_path)
+            from ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
 
         # 加载 UNet
         unet_loader = UnetLoaderGGUF()
