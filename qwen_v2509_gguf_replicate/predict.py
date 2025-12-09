@@ -36,7 +36,7 @@ MODELS = {
     "mmproj": {
         # 修改：从 unsloth 下载，文件名改为 mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf
         "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
-        "filename": "mmproj-F16.gguf ",
+        "filename": "mmproj-F16.gguf",
         "dest": f"{COMFYUI_PATH}/models/text_encoders/mmproj-F16.gguf",
     },
     "vae": {
