@@ -7,9 +7,14 @@ from predict import Predictor
 pred = Predictor()
 pred.setup()
 
+# test_local.py
 out = pred.predict(
+    image="input.jpg",
     prompt="add a cute cat to the image",
-    image="input.jpg",   # 或者你的接口要求的路径
+    negative_prompt="blurry, low quality, distorted", # 必须传！
+    steps=28,
+    cfg_scale=6.0,
+    seed=-1
 )
 
 print(out)
