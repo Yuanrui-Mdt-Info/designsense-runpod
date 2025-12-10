@@ -25,13 +25,15 @@ from PIL import Image
 MODELS = {
     "unet": {
         "repo": "QuantStack/Qwen-Image-Edit-2509-GGUF",
-        "filename": "Qwen-Image-Edit-2509-Q4_K_M.gguf",
-        "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q4_K_M.gguf",
+        # "filename": "Qwen-Image-Edit-2509-Q4_K_M.gguf",
+        # "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q4_K_M.gguf",
+        "filename": "Qwen-Image-Edit-2509-Q2_K.gguf",
+        "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q2_K.gguf",
     },
     "text_encoder": {
         "repo": "Comfy-Org/Qwen-Image_ComfyUI",
         "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
     },
     "vae": {
         # "repo": "Qwen/Qwen-Image-Edit-2509",
@@ -98,7 +100,8 @@ class Predictor(BasePredictor):
         # 加载 UNet (GGUF)
         unet_loader = UnetLoaderGGUF()
         self.unet = unet_loader.load_unet(
-            unet_name="Qwen-Image-Edit-2509-Q4_K_M.gguf"
+            # unet_name="Qwen-Image-Edit-2509-Q4_K_M.gguf"
+            unet_name="Qwen-Image-Edit-2509-Q2_K.gguf"
         )[0]
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
