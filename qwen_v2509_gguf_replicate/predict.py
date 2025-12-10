@@ -100,8 +100,7 @@ class Predictor(BasePredictor):
         # 注意：需要确保 ComfyUI/custom_nodes/ 下存在 ComfyUI_GGUF 软链接指向 ComfyUI-GGUF
         # ln -s ComfyUI-GGUF ComfyUI_GGUF
         
-        # from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
-        from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, CLIPLoaderGGUF
+        from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
 
         # 加载 UNet
         unet_loader = UnetLoaderGGUF()
@@ -110,15 +109,10 @@ class Predictor(BasePredictor):
         )[0]
 
         # 加载 CLIP (Text Encoder)
-        # clip_loader = DualCLIPLoaderGGUF()
-        # self.clip = clip_loader.load_clip(
-        #     clip_name1="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-        #     clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
-        #     type="qwen_image",
-        # )[0]
-        clip_loader = CLIPLoaderGGUF()
+        clip_loader = DualCLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
-            clip_name="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+            clip_name1="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
             type="qwen_image",
         )[0]
 
