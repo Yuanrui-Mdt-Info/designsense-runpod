@@ -39,9 +39,12 @@ MODELS = {
         "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
     },
     "vae": {
-        "repo": "Qwen/Qwen-Image-Edit-2509",
-        "filename": "vae/diffusion_pytorch_model.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/vae/diffusion_pytorch_model.safetensors",
+        # "repo": "Qwen/Qwen-Image-Edit-2509",
+        # "filename": "vae/diffusion_pytorch_model.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/vae/diffusion_pytorch_model.safetensors",
+        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "filename": "split_files/vae/qwen_image_vae.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/vae/qwen_image_vae.safetensors",
     },
 }
 
@@ -127,7 +130,8 @@ class Predictor(BasePredictor):
         from nodes import VAELoader
 
         vae_loader = VAELoader()
-        self.vae = vae_loader.load_vae(vae_name="diffusion_pytorch_model.safetensors")[0]
+        # self.vae = vae_loader.load_vae(vae_name="diffusion_pytorch_model.safetensors")[0]
+        self.vae = vae_loader.load_vae(vae_name="qwen_image_vae.safetensors")[0]
 
     def predict(
         self,
