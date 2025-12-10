@@ -37,13 +37,23 @@ MODELS = {
         "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
         "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
     },
+    "mmproj": {
+        "repo": "QuantStack/Qwen-Image-Edit-GGUF",
+        "filename": "mmproj/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+    },
     "vae": {
         # "repo": "Qwen/Qwen-Image-Edit-2509",
         # "filename": "vae/diffusion_pytorch_model.safetensors",
         # "dest": f"{COMFYUI_PATH}/models/vae/diffusion_pytorch_model.safetensors",
-        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
-        "filename": "split_files/vae/qwen_image_vae.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/vae/qwen_image_vae.safetensors",
+        
+        # "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        # "filename": "split_files/vae/qwen_image_vae.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/vae/qwen_image_vae.safetensors",
+        
+        "repo": "QuantStack/Qwen-Image-Edit-GGUF",
+        "filename": "VAE/Qwen_Image-VAE.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/vae/Qwen_Image-VAE.safetensors",
     },
 }
 
@@ -107,12 +117,20 @@ class Predictor(BasePredictor):
         )[0]
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
-        from nodes import CLIPLoader
+        # from nodes import CLIPLoader
+        from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
 
-        clip_loader = CLIPLoader()
+        # clip_loader = CLIPLoader()
+        # self.clip = clip_loader.load_clip(
+        #     # clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        #     clip_name="qwen_2.5_vl_7b.safetensors",
+        #     type="qwen_image",
+        # )[0]
+        
+        clip_loader = DualCLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
-            # clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
-            clip_name="qwen_2.5_vl_7b.safetensors",
+            clip_name1="qwen_2.5_vl_7b.safetensors",
+            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
             type="qwen_image",
         )[0]
 
@@ -121,7 +139,8 @@ class Predictor(BasePredictor):
 
         vae_loader = VAELoader()
         # self.vae = vae_loader.load_vae(vae_name="diffusion_pytorch_model.safetensors")[0]
-        self.vae = vae_loader.load_vae(vae_name="qwen_image_vae.safetensors")[0]
+        # self.vae = vae_loader.load_vae(vae_name="qwen_image_vae.safetensors")[0]
+        self.vae = vae_loader.load_vae(vae_name="Qwen_Image-VAE.safetensors")[0]
 
     def predict(
         self,
