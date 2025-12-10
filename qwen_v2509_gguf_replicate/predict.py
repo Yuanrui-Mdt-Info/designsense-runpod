@@ -39,12 +39,12 @@ MODELS = {
         
         # "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         # "filename": "Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
-        # "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
+        # "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
     },
     "mmproj": {
         "repo": "QuantStack/Qwen-Image-Edit-GGUF",
         "filename": "mmproj/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
     },
     "vae": {
         # "repo": "Qwen/Qwen-Image-Edit-2509",
@@ -131,7 +131,11 @@ class Predictor(BasePredictor):
         #     type="qwen_image",
         # )[0]
         
-        clip_loader = DualCLIPLoaderGGUF()
+        # clip_loader = DualCLIPLoaderGGUF()
+        
+        from nodes import DualCLIPLoader
+        
+        clip_loader = DualCLIPLoader()
         self.clip = clip_loader.load_clip(
             clip_name1="qwen_2.5_vl_7b.safetensors",
             clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
