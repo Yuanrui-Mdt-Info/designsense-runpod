@@ -29,14 +29,9 @@ MODELS = {
         "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q4_K_M.gguf",
     },
     "text_encoder": {
-        "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
-        "filename": "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-        "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-    },
-    "mmproj": {
-        "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
-        "filename": "mmproj-F16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/clip/Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
+        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/clip/qwen_2.5_vl_7b_fp8_scaled.safetensors",
     },
     "vae": {
         # "repo": "Qwen/Qwen-Image-Edit-2509",
@@ -96,23 +91,22 @@ class Predictor(BasePredictor):
         print("[Setup] Complete!")
 
     def _load_models(self):
-        """预加载 GGUF 模型"""
-        # 注意：需要确保 ComfyUI/custom_nodes/ 下存在 ComfyUI_GGUF 软链接指向 ComfyUI-GGUF
-        # ln -s ComfyUI-GGUF ComfyUI_GGUF
-        
-        from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF, DualCLIPLoaderGGUF
+        """预加载模型"""
+        # UNet 使用 GGUF 格式（需要 ComfyUI-GGUF 插件）
+        from custom_nodes.ComfyUI_GGUF.nodes import UnetLoaderGGUF
 
-        # 加载 UNet
+        # 加载 UNet (GGUF)
         unet_loader = UnetLoaderGGUF()
         self.unet = unet_loader.load_unet(
             unet_name="Qwen-Image-Edit-2509-Q4_K_M.gguf"
         )[0]
 
-        # 加载 CLIP (Text Encoder)
-        clip_loader = DualCLIPLoaderGGUF()
+        # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
+        from nodes import CLIPLoader
+
+        clip_loader = CLIPLoader()
         self.clip = clip_loader.load_clip(
-            clip_name1="Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-F16.gguf",
+            clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
             type="qwen_image",
         )[0]
 
