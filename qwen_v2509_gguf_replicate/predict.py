@@ -31,11 +31,15 @@ MODELS = {
         "dest": f"{COMFYUI_PATH}/models/unet/Qwen-Image-Edit-2509-Q2_K.gguf",
     },
     "text_encoder": {
-        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
-        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
+        # "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        # # "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        # # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
+        
+        "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
+        "filename": "Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
     },
     "mmproj": {
         "repo": "QuantStack/Qwen-Image-Edit-GGUF",
@@ -129,7 +133,7 @@ class Predictor(BasePredictor):
         
         clip_loader = DualCLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
-            clip_name1="qwen_2.5_vl_7b.safetensors",
+            clip_name1="Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
             clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
             type="qwen_image",
         )[0]
