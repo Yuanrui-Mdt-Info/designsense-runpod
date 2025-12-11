@@ -36,28 +36,25 @@ MODELS = {
         # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
         "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
         "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
-        
-        # "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
-        # "filename": "Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
-        # "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
     },
-    "mmproj": {
-        "repo": "QuantStack/Qwen-Image-Edit-GGUF",
-        "filename": "mmproj/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-    },
+    # diffusion model not used
+    # "mmproj": {
+    #     "repo": "QuantStack/Qwen-Image-Edit-GGUF",
+    #     "filename": "mmproj/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+    #     "dest": f"{COMFYUI_PATH}/models/text_encoders/Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+    # },
     "vae": {
         # "repo": "Qwen/Qwen-Image-Edit-2509",
         # "filename": "vae/diffusion_pytorch_model.safetensors",
         # "dest": f"{COMFYUI_PATH}/models/vae/diffusion_pytorch_model.safetensors",
         
-        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
-        "filename": "split_files/vae/qwen_image_vae.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/vae/qwen_image_vae.safetensors",
+        # "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        # "filename": "split_files/vae/qwen_image_vae.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/vae/qwen_image_vae.safetensors",
         
-        # "repo": "QuantStack/Qwen-Image-Edit-GGUF",
-        # "filename": "VAE/Qwen_Image-VAE.safetensors",
-        # "dest": f"{COMFYUI_PATH}/models/vae/Qwen_Image-VAE.safetensors",
+        "repo": "QuantStack/Qwen-Image-Edit-GGUF",
+        "filename": "VAE/Qwen_Image-VAE.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/vae/Qwen_Image-VAE.safetensors",
     },
 }
 
@@ -120,36 +117,13 @@ class Predictor(BasePredictor):
             unet_name="Qwen-Image-Edit-2509-Q2_K.gguf"
         )[0]
         
-        print("test 11111111111, CLIP")
-
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
-        
         from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
         clip_loader = CLIPLoaderGGUF()
-        # from nodes import CLIPLoader
-        # clip_loader = CLIPLoader()
         self.clip = clip_loader.load_clip(
             clip_name="qwen_2.5_vl_7b.safetensors",
             type="qwen_image",
         )[0]
-        
-        # from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
-        # clip_loader = DualCLIPLoaderGGUF()
-        # self.clip = clip_loader.load_clip(
-        #     clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        #     clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        #     type="qwen_image",
-        # )[0]
-        
-        # from nodes import DualCLIPLoader
-        # clip_loader = DualCLIPLoader()
-        # self.clip = clip_loader.load_clip(
-        #     clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        #     clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        #     type="qwen_image",
-        # )[0]
-
-        print("test 22222222222, CLIP")
 
         # 加载 VAE
         from nodes import VAELoader
@@ -271,7 +245,7 @@ class Predictor(BasePredictor):
             positive=positive_cond,
             negative=negative_cond,
             latent_image=latent,
-            denoise=1.0,
+            denoise=0.6,
         )[0]
 
         # 解码 latent 到图像
