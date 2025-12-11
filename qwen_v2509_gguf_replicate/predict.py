@@ -134,7 +134,7 @@ class Predictor(BasePredictor):
         self.clip = clip_loader.load_clip(
             clip_name1="qwen_2.5_vl_7b.safetensors",
             clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-            type="flux",
+            # type="flux",
         )[0]
 
         # 加载 VAE
