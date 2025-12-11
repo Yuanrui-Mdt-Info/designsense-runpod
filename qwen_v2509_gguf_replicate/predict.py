@@ -119,6 +119,8 @@ class Predictor(BasePredictor):
             # unet_name="Qwen-Image-Edit-2509-Q4_K_M.gguf"
             unet_name="Qwen-Image-Edit-2509-Q2_K.gguf"
         )[0]
+        
+        print("test 11111111111, CLIP")
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         
@@ -129,13 +131,23 @@ class Predictor(BasePredictor):
         #     type="qwen_image",
         # )[0]
         
-        from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
-        clip_loader = DualCLIPLoaderGGUF()
+        # from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
+        # clip_loader = DualCLIPLoaderGGUF()
+        # self.clip = clip_loader.load_clip(
+        #     clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        #     clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        #     type="qwen_image",
+        # )[0]
+        
+        from nodes import DualCLIPLoader
+        clip_loader = DualCLIPLoader()
         self.clip = clip_loader.load_clip(
             clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
             clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
             type="qwen_image",
         )[0]
+
+        print("test 22222222222, CLIP")
 
         # 加载 VAE
         from nodes import VAELoader
