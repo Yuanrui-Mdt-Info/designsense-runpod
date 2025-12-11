@@ -35,10 +35,10 @@ MODELS = {
     },
     "text_encoder": {
         "repo": "Comfy-Org/Qwen-Image_ComfyUI",
-        "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
-        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
+        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
     },
     # diffusion model not used
     # "mmproj": {
@@ -119,7 +119,7 @@ class Predictor(BasePredictor):
         from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
         clip_loader = CLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
-            clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            clip_name="qwen_2.5_vl_7b.safetensors",
             type="qwen_image",
         )[0]
 
