@@ -7,6 +7,7 @@
 - **低显存需求**: Q4_K_M 量化版本仅需 ~13GB 显存
 - **成本优化**: 可在 A10G (24GB) 上运行，相比原版 A100 80GB 成本降低约 6 倍
 - **基于 ComfyUI**: 使用 city96/ComfyUI-GGUF 自定义节点加载量化模型
+- **多图像编辑**: 支持最多3张图像同时输入进行编辑（参考 [Qwen Image Edit Multi Editing Workflow](https://huggingface.co/datasets/stablediffusiontutorials/Qwen_Image_Workflows/blob/main/Qwen_Image_Edit_2509_Multi_Editing.json)）
 
 ## 模型文件
 
@@ -35,8 +36,11 @@ pip install cog
 # 构建镜像（首次运行会下载模型，需要一些时间）
 cog build
 
-# 运行预测
+# 运行预测（单图像）
 cog predict -i image=@input.png -i prompt="将背景改为蓝色"
+
+# 运行预测（多图像编辑）
+cog predict -i image=@input1.png -i image2=@input2.png -i image3=@input3.png -i prompt="Replace the cat with a dalmatian"
 ```
 
 ### 3. 推送到 Replicate
@@ -53,12 +57,21 @@ cog push r8.im/<your-username>/qwen-image-edit-gguf
 
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `image` | File | 必填 | 输入图像 |
-| `prompt` | string | "Enhance the image quality" | 编辑提示词 |
-| `negative_prompt` | string | "blurry, low quality, distorted" | 负面提示词 |
-| `steps` | int | 28 | 推理步数 (1-100) |
-| `cfg_scale` | float | 6.0 | CFG 引导强度 (1.0-20.0) |
+| `image` | File | 必填 | 输入图像（主图像） |
+| `image2` | File | 可选 | 第二张图像（用于多图像编辑） |
+| `image3` | File | 可选 | 第三张图像（用于多图像编辑） |
+| `prompt` | string | "" | 编辑提示词 |
+| `negative_prompt` | string | "" | 负面提示词 |
+| `steps` | int | 4 | 推理步数 (1-100)，默认4步（使用 Lightning LoRA） |
+| `cfg_scale` | float | 1.0 | CFG 引导强度 (1.0-20.0)，默认1.0（配合 Lightning LoRA） |
 | `seed` | int | -1 | 随机种子 (-1 为随机) |
+
+### 多图像编辑说明
+
+- 支持最多3张图像同时输入（image, image2, image3）
+- 使用 `TextEncodeQwenImageEditPlus` 节点进行多图像条件编码
+- 如果只提供单张图像，会自动回退到单图像模式
+- 所有图像会自动调整到相同尺寸（基于第一张图像的尺寸）
 
 ## 硬件要求
 
@@ -104,6 +117,8 @@ python download_models.py -o ./models
 
 - [QuantStack/Qwen-Image-Edit-2509-GGUF](https://huggingface.co/QuantStack/Qwen-Image-Edit-2509-GGUF)
 - [Qwen/Qwen-Image-Edit-2509](https://huggingface.co/Qwen/Qwen-Image-Edit-2509) (原版)
+- [Qwen Image Edit Multi Editing Workflow](https://huggingface.co/datasets/stablediffusiontutorials/Qwen_Image_Workflows/blob/main/Qwen_Image_Edit_2509_Multi_Editing.json)
 - [city96/ComfyUI-GGUF](https://github.com/city96/ComfyUI-GGUF)
+- [Comfy-Org/Qwen-Image_ComfyUI](https://github.com/Comfy-Org/Qwen-Image_ComfyUI)
 - [Replicate Cog](https://github.com/replicate/cog)
 

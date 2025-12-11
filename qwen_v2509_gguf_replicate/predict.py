@@ -11,7 +11,7 @@ import sys
 import json
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List
 
 # 自动检测 ComfyUI 路径
 # 如果环境变量中有 COMFYUI_PATH 则使用，否则默认为 /ComfyUI (Replicate 环境)
@@ -130,10 +130,18 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        image: CogPath = Input(description="输入图像"),
+        image: CogPath = Input(description="输入图像（主图像）"),
+        image2: Optional[CogPath] = Input(
+            description="第二张图像（可选，用于多图像编辑）",
+            default=None,
+        ),
+        image3: Optional[CogPath] = Input(
+            description="第三张图像（可选，用于多图像编辑）",
+            default=None,
+        ),
         prompt: str = Input(
             description="编辑提示词",
-            default="Enhance the image quality",
+            default="",
         ),
         negative_prompt: str = Input(
             description="负面提示词",
@@ -141,13 +149,13 @@ class Predictor(BasePredictor):
         ),
         steps: int = Input(
             description="推理步数",
-            default=28,
+            default=4,
             ge=1,
             le=100,
         ),
         cfg_scale: float = Input(
             description="CFG Scale (引导强度)",
-            default=6.0,
+            default=1.0,
             ge=1.0,
             le=20.0,
         ),
@@ -160,69 +168,167 @@ class Predictor(BasePredictor):
         import torch
         import numpy as np
         from nodes import (
-            CLIPTextEncode,
             KSampler,
             VAEEncode,
             VAEDecode,
-            EmptyLatentImage,
+            EmptySD3LatentImage,
         )
 
-        print(f"[Predict] Processing image with prompt: {prompt}")
+        print(f"[Predict] Processing images with prompt: {prompt}")
         print(f"[Predict] Input image path: {image}")
-        print(f"[Predict] Input image type: {type(image)}")
+        print(f"[Predict] Image2: {image2}")
+        print(f"[Predict] Image3: {image3}")
         
-        # 检查图片文件是否存在
-        image_path = str(image)
-        if not os.path.exists(image_path):
-            raise FileNotFoundError(f"Input image file not found: {image_path}")
-        print(f"[Predict] Image file exists: {os.path.exists(image_path)}")
-        print(f"[Predict] Image file size: {os.path.getsize(image_path)} bytes")
-
-        # 加载输入图像
-        try:
-            input_image = Image.open(image_path)
-            print(f"[Predict] Image opened successfully")
-            print(f"[Predict] Image format: {input_image.format}")
-            print(f"[Predict] Image mode: {input_image.mode}")
-            print(f"[Predict] Original image size: {input_image.size} (width x height)")
-            
-            input_image = input_image.convert("RGB")
-            print(f"[Predict] Image converted to RGB")
-        except Exception as e:
-            print(f"[Predict] Error loading image: {e}")
-            raise
+        # 加载图像列表
+        images = []
+        image_paths = [image, image2, image3]
         
-        width, height = input_image.size
-        print(f"[Predict] Image dimensions: {width}x{height}")
+        for idx, img_path in enumerate(image_paths, 1):
+            if img_path is None:
+                continue
+                
+            img_str = str(img_path)
+            if not os.path.exists(img_str):
+                print(f"[Predict] Warning: Image{idx} file not found: {img_str}, skipping...")
+                continue
+                
+            try:
+                img = Image.open(img_str).convert("RGB")
+                print(f"[Predict] Image{idx} loaded: {img.size}")
+                images.append(img)
+            except Exception as e:
+                print(f"[Predict] Error loading image{idx}: {e}")
+                raise
+        
+        if not images:
+            raise ValueError("至少需要提供一张输入图像")
+        
+        print(f"[Predict] Total images loaded: {len(images)}")
+        
+        # 使用第一张图像的尺寸
+        first_image = images[0]
+        width, height = first_image.size
+        print(f"[Predict] Base image dimensions: {width}x{height}")
 
         # 确保尺寸是 8 的倍数
-        original_width, original_height = width, height
         width = (width // 8) * 8
         height = (height // 8) * 8
-        print(f"[Predict] Adjusted dimensions (multiple of 8): {width}x{height} (from {original_width}x{original_height})")
+        print(f"[Predict] Adjusted dimensions (multiple of 8): {width}x{height}")
         
-        if width != original_width or height != original_height:
-            input_image = input_image.resize((width, height), Image.LANCZOS)
-            print(f"[Predict] Image resized to {width}x{height}")
-        else:
-            print(f"[Predict] Image size already multiple of 8, no resize needed")
+        # 调整所有图像尺寸
+        processed_images = []
+        # 兼容新旧版本的 Pillow
+        try:
+            resize_filter = Image.Resampling.LANCZOS
+        except AttributeError:
+            resize_filter = Image.LANCZOS
+            
+        for idx, img in enumerate(images, 1):
+            if img.size != (width, height):
+                img = img.resize((width, height), resize_filter)
+                print(f"[Predict] Image{idx} resized to {width}x{height}")
+            processed_images.append(img)
 
         # 转换为 tensor
-        image_np = np.array(input_image).astype(np.float32) / 255.0
-        print(f"[Predict] Image converted to numpy array, shape: {image_np.shape}, dtype: {image_np.dtype}, range: [{image_np.min():.3f}, {image_np.max():.3f}]")
+        image_tensors = []
+        for idx, img in enumerate(processed_images, 1):
+            image_np = np.array(img).astype(np.float32) / 255.0
+            image_tensor = torch.from_numpy(image_np).unsqueeze(0)
+            image_tensors.append(image_tensor)
+            print(f"[Predict] Image{idx} tensor shape: {image_tensor.shape}")
+
+        # 使用 TextEncodeQwenImageEditPlus 节点（如果可用）
+        # 否则回退到单图像模式
+        use_multi_image = False
+        TextEncodeQwenImageEditPlus = None
         
-        image_tensor = torch.from_numpy(image_np).unsqueeze(0)
-        print(f"[Predict] Image converted to tensor, shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
+        # 尝试多种可能的导入路径
+        import_paths = [
+            "custom_nodes.ComfyUI-Qwen-Image.nodes",
+            "custom_nodes.comfyui_qwen_image_edit.nodes",
+            "custom_nodes.Qwen_Image_ComfyUI.nodes",
+        ]
+        
+        for import_path in import_paths:
+            try:
+                module = __import__(import_path, fromlist=["TextEncodeQwenImageEditPlus"])
+                if hasattr(module, "TextEncodeQwenImageEditPlus"):
+                    TextEncodeQwenImageEditPlus = module.TextEncodeQwenImageEditPlus
+                    use_multi_image = True
+                    print(f"[Predict] Found TextEncodeQwenImageEditPlus at {import_path}")
+                    break
+            except (ImportError, AttributeError):
+                continue
+        
+        if not use_multi_image:
+            print("[Predict] TextEncodeQwenImageEditPlus not found, using single image mode")
+            if len(image_tensors) > 1:
+                print("[Predict] Warning: Multiple images provided but multi-image node not available, using first image only")
+                image_tensors = [image_tensors[0]]
 
-        # 编码提示词
-        print(f"[Predict] Encoding prompts...")
-        clip_encode = CLIPTextEncode()
-        positive_cond = clip_encode.encode(self.clip, prompt)[0]
-        negative_cond = clip_encode.encode(self.clip, negative_prompt)[0]
+        if use_multi_image and TextEncodeQwenImageEditPlus and len(image_tensors) > 1:
+            # 多图像编辑模式
+            print(f"[Predict] Encoding with {len(image_tensors)} images...")
+            text_encode = TextEncodeQwenImageEditPlus()
+            
+            # 准备图像输入（最多3张）
+            image1_tensor = image_tensors[0] if len(image_tensors) > 0 else None
+            image2_tensor = image_tensors[1] if len(image_tensors) > 1 else None
+            image3_tensor = image_tensors[2] if len(image_tensors) > 2 else None
+            
+            # 编码 positive conditioning
+            # TextEncodeQwenImageEditPlus 的 encode 方法签名可能不同，需要根据实际实现调整
+            try:
+                positive_cond = text_encode.encode(
+                    clip=self.clip,
+                    vae=self.vae,
+                    text=prompt if prompt else "",
+                    image1=image1_tensor,
+                    image2=image2_tensor,
+                    image3=image3_tensor,
+                )[0]
+            except TypeError:
+                # 如果参数不匹配，尝试其他调用方式
+                positive_cond = text_encode.encode(
+                    self.clip,
+                    prompt if prompt else "",
+                    self.vae,
+                    image1_tensor,
+                    image2_tensor,
+                    image3_tensor,
+                )[0]
+            
+            # 编码 negative conditioning（如果没有提供负面提示词，使用空字符串）
+            try:
+                negative_cond = text_encode.encode(
+                    clip=self.clip,
+                    vae=self.vae,
+                    text=negative_prompt if negative_prompt else "",
+                    image1=None,
+                    image2=None,
+                    image3=None,
+                )[0]
+            except TypeError:
+                negative_cond = text_encode.encode(
+                    self.clip,
+                    negative_prompt if negative_prompt else "",
+                    self.vae,
+                    None,
+                    None,
+                    None,
+                )[0]
+        else:
+            # 单图像模式 - 使用第一张图像
+            print("[Predict] Using single image mode...")
+            from nodes import CLIPTextEncode
+            
+            clip_encode = CLIPTextEncode()
+            positive_cond = clip_encode.encode(self.clip, prompt if prompt else "")[0]
+            negative_cond = clip_encode.encode(self.clip, negative_prompt if negative_prompt else "")[0]
 
-        # 图像编码到 latent
+        # 图像编码到 latent（使用第一张图像）
         vae_encode = VAEEncode()
-        latent = vae_encode.encode(self.vae, image_tensor)[0]
+        latent = vae_encode.encode(self.vae, image_tensors[0])[0]
         
         # 诊断信息 - latent 是字典，包含 'samples' 键
         if isinstance(latent, dict) and 'samples' in latent:
@@ -251,7 +357,7 @@ class Predictor(BasePredictor):
             steps=steps,
             cfg=cfg_scale,
             sampler_name="euler",
-            scheduler="normal",
+            scheduler="simple",
             positive=positive_cond,
             negative=negative_cond,
             latent_image=latent,

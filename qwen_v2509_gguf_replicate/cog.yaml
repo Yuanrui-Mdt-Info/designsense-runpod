@@ -47,10 +47,15 @@ build:
     - ln -s /ComfyUI/custom_nodes/ComfyUI-GGUF /ComfyUI/custom_nodes/ComfyUI_GGUF
     - pip install --upgrade gguf
     
+    # 安装 Qwen Image Edit 自定义节点（支持多图像编辑）
+    - git clone https://github.com/Comfy-Org/Qwen-Image_ComfyUI.git /ComfyUI/custom_nodes/ComfyUI-Qwen-Image || echo "Qwen Image nodes may already exist"
+    
     # 创建模型目录
     - mkdir -p /ComfyUI/models/unet
     - mkdir -p /ComfyUI/models/clip
+    - mkdir -p /ComfyUI/models/text_encoders
     - mkdir -p /ComfyUI/models/vae
+    - mkdir -p /ComfyUI/models/loras
     - mkdir -p /ComfyUI/input
     - mkdir -p /ComfyUI/output
 

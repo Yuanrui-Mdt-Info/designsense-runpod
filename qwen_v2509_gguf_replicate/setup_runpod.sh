@@ -92,13 +92,24 @@ else
     echo "软连接已存在或目标已存在"
 fi
 
-# 5. 创建必要的目录结构
+# 5. 安装 Qwen Image Edit 自定义节点（支持多图像编辑）
 echo ""
-echo "[5/5] 创建模型和输出目录..."
+echo "[5/6] 安装 Qwen Image Edit 自定义节点..."
+QWEN_NODE_DIR="$WORKSPACE/ComfyUI/custom_nodes/ComfyUI-Qwen-Image"
+if [ ! -d "$QWEN_NODE_DIR" ]; then
+    git clone https://github.com/Comfy-Org/Qwen-Image_ComfyUI.git "$QWEN_NODE_DIR" || echo "Qwen Image nodes installation failed or already exists"
+else
+    echo "Qwen Image nodes 已存在，跳过克隆"
+fi
+
+# 6. 创建必要的目录结构
+echo ""
+echo "[6/6] 创建模型和输出目录..."
 mkdir -p "$WORKSPACE/ComfyUI/models/unet"
 mkdir -p "$WORKSPACE/ComfyUI/models/clip"
 mkdir -p "$WORKSPACE/ComfyUI/models/text_encoders"
 mkdir -p "$WORKSPACE/ComfyUI/models/vae"
+mkdir -p "$WORKSPACE/ComfyUI/models/loras"
 mkdir -p "$WORKSPACE/ComfyUI/input"
 mkdir -p "$WORKSPACE/ComfyUI/output"
 
@@ -109,8 +120,11 @@ echo "=========================================="
 echo ""
 echo "ComfyUI 路径: $WORKSPACE/ComfyUI"
 echo "ComfyUI-GGUF 节点: $GGUF_NODE_DIR"
+echo "Qwen Image 节点: $QWEN_NODE_DIR"
 echo "软连接: $GGUF_SYMLINK"
 echo ""
 echo "使用前请设置环境变量:"
 echo "  export COMFYUI_PATH=$WORKSPACE/ComfyUI"
+echo ""
+echo "注意: 多图像编辑功能需要 Qwen Image Edit 自定义节点"
 echo ""

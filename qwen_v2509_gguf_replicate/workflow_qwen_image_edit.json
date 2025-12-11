@@ -1,119 +1,219 @@
 {
-  "last_node_id": 12,
-  "last_link_id": 12,
+  "last_node_id": 114,
+  "last_link_id": 225,
   "nodes": [
     {
-      "id": 1,
+      "id": 37,
       "type": "UnetLoaderGGUF",
-      "pos": [50, 50],
-      "size": [300, 60],
+      "pos": [-250, -100],
+      "size": [330, 90],
       "properties": {},
       "widgets_values": ["Qwen-Image-Edit-2509-Q4_K_M.gguf"]
     },
     {
-      "id": 2,
-      "type": "DualCLIPLoaderGGUF",
-      "pos": [50, 150],
-      "size": [300, 100],
+      "id": 38,
+      "type": "CLIPLoader",
+      "pos": [-250, 160],
+      "size": [330, 110],
       "properties": {},
       "widgets_values": [
-        "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
-        "Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
-        "qwen_image"
+        "qwen_2.5_vl_7b.safetensors",
+        "qwen_image",
+        "default"
       ]
+    },
+    {
+      "id": 39,
+      "type": "VAELoader",
+      "pos": [-250, 320],
+      "size": [330, 60],
+      "properties": {},
+      "widgets_values": ["qwen_image_vae.safetensors"]
+    },
+    {
+      "id": 78,
+      "type": "LoadImage",
+      "pos": [-240, 530],
+      "size": [274, 314],
+      "properties": {},
+      "widgets_values": ["input1.png", "image"]
+    },
+    {
+      "id": 106,
+      "type": "LoadImage",
+      "pos": [56, 530],
+      "size": [274, 314],
+      "properties": {},
+      "widgets_values": ["input2.png", "image"]
+    },
+    {
+      "id": 108,
+      "type": "LoadImage",
+      "pos": [352, 530],
+      "size": [274, 314],
+      "properties": {},
+      "widgets_values": ["input3.png", "image"]
+    },
+    {
+      "id": 93,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [-230, 890],
+      "size": [270, 82],
+      "properties": {},
+      "widgets_values": ["lanczos", 1]
+    },
+    {
+      "id": 88,
+      "type": "VAEEncode",
+      "pos": [490, 900],
+      "size": [140, 46],
+      "properties": {}
+    },
+    {
+      "id": 110,
+      "type": "TextEncodeQwenImageEditPlus",
+      "pos": [220, 180],
+      "size": [400, 200],
+      "properties": {},
+      "widgets_values": [""]
+    },
+    {
+      "id": 111,
+      "type": "TextEncodeQwenImageEditPlus",
+      "pos": [220, -90],
+      "size": [400, 200],
+      "properties": {},
+      "widgets_values": ["Replace the cat with a dalmatian"]
+    },
+    {
+      "id": 89,
+      "type": "LoraLoaderModelOnly",
+      "pos": [-240, 40],
+      "size": [310, 82],
+      "properties": {},
+      "widgets_values": [
+        "Qwen-Image-Lightning-4steps-V1.0.safetensors",
+        1
+      ]
+    },
+    {
+      "id": 66,
+      "type": "ModelSamplingAuraFlow",
+      "pos": [740, -130],
+      "size": [290, 60],
+      "properties": {},
+      "widgets_values": [3]
+    },
+    {
+      "id": 75,
+      "type": "CFGNorm",
+      "pos": [740, -20],
+      "size": [290, 60],
+      "properties": {},
+      "widgets_values": [1]
     },
     {
       "id": 3,
-      "type": "VAELoader",
-      "pos": [50, 300],
-      "size": [300, 60],
-      "properties": {},
-      "widgets_values": ["qwen-image-vae.safetensors"]
-    },
-    {
-      "id": 4,
-      "type": "LoadImage",
-      "pos": [50, 400],
-      "size": [300, 100],
-      "properties": {},
-      "widgets_values": ["input.png", "image"]
-    },
-    {
-      "id": 5,
-      "type": "CLIPTextEncode",
-      "pos": [400, 50],
-      "size": [300, 100],
-      "properties": {},
-      "widgets_values": ["Enhance the image quality"]
-    },
-    {
-      "id": 6,
-      "type": "CLIPTextEncode",
-      "pos": [400, 180],
-      "size": [300, 100],
-      "properties": {},
-      "widgets_values": ["blurry, low quality, distorted"]
-    },
-    {
-      "id": 7,
-      "type": "VAEEncode",
-      "pos": [400, 400],
-      "size": [200, 60],
-      "properties": {}
-    },
-    {
-      "id": 8,
       "type": "KSampler",
-      "pos": [750, 150],
-      "size": [300, 300],
+      "pos": [740, 90],
+      "size": [300, 474],
       "properties": {},
       "widgets_values": [
-        42,
-        "fixed",
-        28,
-        6.0,
+        1118877715456453,
+        "randomize",
+        4,
+        1,
         "euler",
-        "normal",
-        1.0
+        "simple",
+        1
       ]
     },
     {
-      "id": 9,
+      "id": 8,
       "type": "VAEDecode",
-      "pos": [1100, 200],
-      "size": [200, 60],
+      "pos": [1080, -130],
+      "size": [210, 46],
       "properties": {}
     },
     {
-      "id": 10,
+      "id": 60,
       "type": "SaveImage",
-      "pos": [1350, 200],
-      "size": [300, 300],
+      "pos": [1070, -30],
+      "size": [950, 1040],
       "properties": {},
-      "widgets_values": ["output"]
+      "widgets_values": ["ComfyUI"]
+    },
+    {
+      "id": 112,
+      "type": "EmptySD3LatentImage",
+      "pos": [750, 860],
+      "size": [270, 106],
+      "properties": {},
+      "widgets_values": [1024, 1024, 1]
     }
   ],
   "links": [
-    [1, 1, 0, 8, 0, "MODEL"],
-    [2, 2, 0, 5, 0, "CLIP"],
-    [3, 2, 0, 6, 0, "CLIP"],
-    [4, 5, 0, 8, 1, "CONDITIONING"],
-    [5, 6, 0, 8, 2, "CONDITIONING"],
-    [6, 3, 0, 7, 1, "VAE"],
-    [7, 4, 0, 7, 0, "IMAGE"],
-    [8, 7, 0, 8, 3, "LATENT"],
-    [9, 3, 0, 9, 1, "VAE"],
-    [10, 8, 0, 9, 0, "LATENT"],
-    [11, 9, 0, 10, 0, "IMAGE"]
+    [184, 37, 0, 89, 0, "MODEL"],
+    [185, 89, 0, 66, 0, "MODEL"],
+    [141, 66, 0, 75, 0, "MODEL"],
+    [186, 75, 0, 3, 0, "MODEL"],
+    [76, 39, 0, 8, 1, "VAE"],
+    [110, 8, 0, 60, 0, "IMAGE"],
+    [128, 3, 0, 8, 0, "LATENT"],
+    [168, 39, 0, 88, 1, "VAE"],
+    [177, 78, 0, 93, 0, "IMAGE"],
+    [178, 93, 0, 88, 0, "IMAGE"],
+    [204, 38, 0, 110, 0, "CLIP"],
+    [205, 38, 0, 111, 0, "CLIP"],
+    [206, 39, 0, 110, 1, "VAE"],
+    [207, 39, 0, 111, 1, "VAE"],
+    [210, 110, 0, 3, 2, "CONDITIONING"],
+    [211, 111, 0, 3, 1, "CONDITIONING"],
+    [217, 108, 0, 111, 4, "IMAGE"],
+    [218, 108, 0, 110, 4, "IMAGE"],
+    [219, 106, 0, 111, 3, "IMAGE"],
+    [220, 106, 0, 110, 3, "IMAGE"],
+    [221, 88, 0, 3, 3, "LATENT"],
+    [224, 93, 0, 111, 2, "IMAGE"],
+    [225, 93, 0, 110, 2, "IMAGE"]
   ],
-  "groups": [],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Step1 - Load models",
+      "bounding": [-270, -170, 370, 570],
+      "color": "#3f789e",
+      "font_size": 24
+    },
+    {
+      "id": 2,
+      "title": "Step 2 - Upload image for editing",
+      "bounding": [-270, 430, 970, 550],
+      "color": "#3f789e",
+      "font_size": 24
+    },
+    {
+      "id": 3,
+      "title": "Step 4 - Prompt",
+      "bounding": [130, -170, 570, 570],
+      "color": "#3f789e",
+      "font_size": 24
+    },
+    {
+      "id": 4,
+      "title": "Step3 - Image Size",
+      "bounding": [730, 780, 310, 200],
+      "color": "#3f789e",
+      "font_size": 24
+    }
+  ],
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1,
-      "offset": [0, 0]
-    }
+      "scale": 0.53,
+      "offset": [1236.58, 518.90]
+    },
+    "frontendVersion": "1.28.1"
   },
   "version": 0.4
 }
-
