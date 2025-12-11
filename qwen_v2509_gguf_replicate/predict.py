@@ -124,10 +124,10 @@ class Predictor(BasePredictor):
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         
-        # from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
-        # clip_loader = CLIPLoaderGGUF()
-        from nodes import CLIPLoader
-        clip_loader = CLIPLoader()
+        from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
+        clip_loader = CLIPLoaderGGUF()
+        # from nodes import CLIPLoader
+        # clip_loader = CLIPLoader()
         self.clip = clip_loader.load_clip(
             clip_name="qwen_2.5_vl_7b.safetensors",
             type="qwen_image",
@@ -250,21 +250,16 @@ class Predictor(BasePredictor):
         clip_encode = CLIPTextEncode()
         positive_cond = clip_encode.encode(self.clip, prompt)[0]
         negative_cond = clip_encode.encode(self.clip, negative_prompt)[0]
-        print(f"[Predict] Prompts encoded, positive shape: {positive_cond.shape}, negative shape: {negative_cond.shape}")
 
         # 图像编码到 latent
-        print(f"[Predict] Encoding image to latent space...")
         vae_encode = VAEEncode()
         latent = vae_encode.encode(self.vae, image_tensor)[0]
-        print(f"[Predict] Image encoded to latent, shape: {latent.shape}")
 
         # 设置随机种子
         if seed == -1:
             seed = torch.randint(0, 2**32 - 1, (1,)).item()
-        print(f"[Predict] Using seed: {seed}")
 
         # KSampler 采样
-        print(f"[Predict] Starting sampling (steps={steps}, cfg_scale={cfg_scale})...")
         sampler = KSampler()
         samples = sampler.sample(
             model=self.unet,
@@ -278,23 +273,17 @@ class Predictor(BasePredictor):
             latent_image=latent,
             denoise=1.0,
         )[0]
-        print(f"[Predict] Sampling completed, output shape: {samples.shape}")
 
         # 解码 latent 到图像
-        print(f"[Predict] Decoding latent to image...")
         vae_decode = VAEDecode()
         decoded = vae_decode.decode(self.vae, samples)[0]
-        print(f"[Predict] Decoded image shape: {decoded.shape}")
 
         # 转换为 PIL Image
         output_np = (decoded.squeeze(0).cpu().numpy() * 255).astype(np.uint8)
         output_image = Image.fromarray(output_np)
-        print(f"[Predict] Output image created, size: {output_image.size}, mode: {output_image.mode}")
 
         # 保存输出
         output_path = "/tmp/output.png"
         output_image.save(output_path)
-        print(f"[Predict] Output saved to: {output_path}")
-        print(f"[Predict] Output file size: {os.path.getsize(output_path)} bytes")
         print(f"[Predict] Done! Seed: {seed}")
         return CogPath(output_path)
