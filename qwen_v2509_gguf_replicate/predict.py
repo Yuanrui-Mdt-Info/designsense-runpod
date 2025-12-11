@@ -199,34 +199,72 @@ class Predictor(BasePredictor):
         )
 
         print(f"[Predict] Processing image with prompt: {prompt}")
+        print(f"[Predict] Input image path: {image}")
+        print(f"[Predict] Input image type: {type(image)}")
+        
+        # 检查图片文件是否存在
+        image_path = str(image)
+        if not os.path.exists(image_path):
+            raise FileNotFoundError(f"Input image file not found: {image_path}")
+        print(f"[Predict] Image file exists: {os.path.exists(image_path)}")
+        print(f"[Predict] Image file size: {os.path.getsize(image_path)} bytes")
 
         # 加载输入图像
-        input_image = Image.open(str(image)).convert("RGB")
+        try:
+            input_image = Image.open(image_path)
+            print(f"[Predict] Image opened successfully")
+            print(f"[Predict] Image format: {input_image.format}")
+            print(f"[Predict] Image mode: {input_image.mode}")
+            print(f"[Predict] Original image size: {input_image.size} (width x height)")
+            
+            input_image = input_image.convert("RGB")
+            print(f"[Predict] Image converted to RGB")
+        except Exception as e:
+            print(f"[Predict] Error loading image: {e}")
+            raise
+        
         width, height = input_image.size
+        print(f"[Predict] Image dimensions: {width}x{height}")
 
         # 确保尺寸是 8 的倍数
+        original_width, original_height = width, height
         width = (width // 8) * 8
         height = (height // 8) * 8
-        input_image = input_image.resize((width, height), Image.LANCZOS)
+        print(f"[Predict] Adjusted dimensions (multiple of 8): {width}x{height} (from {original_width}x{original_height})")
+        
+        if width != original_width or height != original_height:
+            input_image = input_image.resize((width, height), Image.LANCZOS)
+            print(f"[Predict] Image resized to {width}x{height}")
+        else:
+            print(f"[Predict] Image size already multiple of 8, no resize needed")
 
         # 转换为 tensor
         image_np = np.array(input_image).astype(np.float32) / 255.0
+        print(f"[Predict] Image converted to numpy array, shape: {image_np.shape}, dtype: {image_np.dtype}, range: [{image_np.min():.3f}, {image_np.max():.3f}]")
+        
         image_tensor = torch.from_numpy(image_np).unsqueeze(0)
+        print(f"[Predict] Image converted to tensor, shape: {image_tensor.shape}, dtype: {image_tensor.dtype}")
 
         # 编码提示词
+        print(f"[Predict] Encoding prompts...")
         clip_encode = CLIPTextEncode()
         positive_cond = clip_encode.encode(self.clip, prompt)[0]
         negative_cond = clip_encode.encode(self.clip, negative_prompt)[0]
+        print(f"[Predict] Prompts encoded, positive shape: {positive_cond.shape}, negative shape: {negative_cond.shape}")
 
         # 图像编码到 latent
+        print(f"[Predict] Encoding image to latent space...")
         vae_encode = VAEEncode()
         latent = vae_encode.encode(self.vae, image_tensor)[0]
+        print(f"[Predict] Image encoded to latent, shape: {latent.shape}")
 
         # 设置随机种子
         if seed == -1:
             seed = torch.randint(0, 2**32 - 1, (1,)).item()
+        print(f"[Predict] Using seed: {seed}")
 
         # KSampler 采样
+        print(f"[Predict] Starting sampling (steps={steps}, cfg_scale={cfg_scale})...")
         sampler = KSampler()
         samples = sampler.sample(
             model=self.unet,
@@ -240,18 +278,23 @@ class Predictor(BasePredictor):
             latent_image=latent,
             denoise=1.0,
         )[0]
+        print(f"[Predict] Sampling completed, output shape: {samples.shape}")
 
         # 解码 latent 到图像
+        print(f"[Predict] Decoding latent to image...")
         vae_decode = VAEDecode()
         decoded = vae_decode.decode(self.vae, samples)[0]
+        print(f"[Predict] Decoded image shape: {decoded.shape}")
 
         # 转换为 PIL Image
         output_np = (decoded.squeeze(0).cpu().numpy() * 255).astype(np.uint8)
         output_image = Image.fromarray(output_np)
+        print(f"[Predict] Output image created, size: {output_image.size}, mode: {output_image.mode}")
 
         # 保存输出
         output_path = "/tmp/output.png"
         output_image.save(output_path)
-
+        print(f"[Predict] Output saved to: {output_path}")
+        print(f"[Predict] Output file size: {os.path.getsize(output_path)} bytes")
         print(f"[Predict] Done! Seed: {seed}")
         return CogPath(output_path)
