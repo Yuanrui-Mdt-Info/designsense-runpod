@@ -163,6 +163,12 @@ class Predictor(BasePredictor):
             description="随机种子 (-1 为随机)",
             default=-1,
         ),
+        denoise: float = Input(
+            description="去噪强度",
+            default=0.5,
+            ge=0.0,
+            le=1.0,
+        ),
     ) -> CogPath:
         """执行图像编辑推理"""
         import torch
@@ -171,7 +177,6 @@ class Predictor(BasePredictor):
             KSampler,
             VAEEncode,
             VAEDecode,
-            EmptySD3LatentImage,
         )
 
         print(f"[Predict] Processing images with prompt: {prompt}")
@@ -361,7 +366,7 @@ class Predictor(BasePredictor):
             positive=positive_cond,
             negative=negative_cond,
             latent_image=latent,
-            denoise=0.5,
+            denoise=denoise,
         )[0]
 
         # 解码 latent 到图像

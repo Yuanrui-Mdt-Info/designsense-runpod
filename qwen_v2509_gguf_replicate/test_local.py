@@ -12,9 +12,10 @@ out = pred.predict(
     image="input.jpg",
     prompt="add a cute cat to the bed",
     negative_prompt="blurry, low quality, distorted",
-    steps=4,  # Lightning LoRA 快速模式
-    cfg_scale=1.0,
-    seed=-1
+    steps=20,  # Lightning LoRA 快速模式
+    cfg_scale=3.0,
+    seed=-1,
+    denoise=0.5
 )
 
 print(out)
