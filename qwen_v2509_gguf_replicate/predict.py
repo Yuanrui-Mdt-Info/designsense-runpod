@@ -32,10 +32,10 @@ MODELS = {
     },
     "text_encoder": {
         "repo": "Comfy-Org/Qwen-Image_ComfyUI",
-        "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
-        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
-        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
+        # "filename": "split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        # "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "filename": "split_files/text_encoders/qwen_2.5_vl_7b.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/text_encoders/qwen_2.5_vl_7b.safetensors",
         
         # "repo": "unsloth/Qwen2.5-VL-7B-Instruct-GGUF",
         # "filename": "Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
@@ -129,7 +129,7 @@ class Predictor(BasePredictor):
         from nodes import CLIPLoader
         clip_loader = CLIPLoader()
         self.clip = clip_loader.load_clip(
-            clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            clip_name="qwen_2.5_vl_7b.safetensors",
             type="qwen_image",
         )[0]
         
