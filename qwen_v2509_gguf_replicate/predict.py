@@ -1,3 +1,6 @@
+#! /usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 """
 Qwen-Image-Edit-2509 GGUF Predictor for Replicate
 基于 ComfyUI + ComfyUI-GGUF 运行量化模型
@@ -229,13 +232,20 @@ class Predictor(BasePredictor):
         vae_encode = VAEEncode()
         latent = vae_encode.encode(self.vae, image_tensor)[0]
         
-        # 诊断信息
-        print(f"[Predict] Latent shape: {latent.shape}")
-        print(f"[Predict] Latent dtype: {latent.dtype}")
-        print(f"[Predict] Latent min: {latent.min().item():.3f}")
-        print(f"[Predict] Latent max: {latent.max().item():.3f}")
-        print(f"[Predict] Latent mean: {latent.mean().item():.3f}")
-        print(f"[Predict] Latent std: {latent.std().item():.3f}")
+        # 诊断信息 - latent 是字典，包含 'samples' 键
+        if isinstance(latent, dict) and 'samples' in latent:
+            latent_samples = latent['samples']
+            print(f"[Predict] Latent type: dict with 'samples' key")
+            print(f"[Predict] Latent samples shape: {latent_samples.shape}")
+            print(f"[Predict] Latent samples dtype: {latent_samples.dtype}")
+            print(f"[Predict] Latent samples min: {latent_samples.min().item():.3f}")
+            print(f"[Predict] Latent samples max: {latent_samples.max().item():.3f}")
+            print(f"[Predict] Latent samples mean: {latent_samples.mean().item():.3f}")
+            print(f"[Predict] Latent samples std: {latent_samples.std().item():.3f}")
+        else:
+            print(f"[Predict] Latent type: {type(latent)}")
+            if isinstance(latent, dict):
+                print(f"[Predict] Latent keys: {list(latent.keys())}")
 
         # 设置随机种子
         if seed == -1:
@@ -253,7 +263,7 @@ class Predictor(BasePredictor):
             positive=positive_cond,
             negative=negative_cond,
             latent_image=latent,
-            denoise=0.6,
+            denoise=0.5,
         )[0]
 
         # 解码 latent 到图像
