@@ -124,20 +124,20 @@ class Predictor(BasePredictor):
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         
-        # from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
-        # clip_loader = CLIPLoaderGGUF()
-        # self.clip = clip_loader.load_clip(
-        #     clip_name="Qwen2.5-VL-7B-Instruct-Q2_K.gguf",
-        #     type="qwen_image",
-        # )[0]
-        
-        from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
-        clip_loader = DualCLIPLoaderGGUF()
+        from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
+        clip_loader = CLIPLoaderGGUF()
         self.clip = clip_loader.load_clip(
-            clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
-            clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+            clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
             type="qwen_image",
         )[0]
+        
+        # from custom_nodes.ComfyUI_GGUF.nodes import DualCLIPLoaderGGUF
+        # clip_loader = DualCLIPLoaderGGUF()
+        # self.clip = clip_loader.load_clip(
+        #     clip_name1="qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        #     clip_name2="Qwen2.5-VL-7B-Instruct-mmproj-BF16.gguf",
+        #     type="qwen_image",
+        # )[0]
         
         # from nodes import DualCLIPLoader
         # clip_loader = DualCLIPLoader()
