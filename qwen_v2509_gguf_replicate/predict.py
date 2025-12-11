@@ -124,8 +124,10 @@ class Predictor(BasePredictor):
 
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         
-        from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
-        clip_loader = CLIPLoaderGGUF()
+        # from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
+        # clip_loader = CLIPLoaderGGUF()
+        from nodes import CLIPLoader
+        clip_loader = CLIPLoader()
         self.clip = clip_loader.load_clip(
             clip_name="qwen_2.5_vl_7b_fp8_scaled.safetensors",
             type="qwen_image",
