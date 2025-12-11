@@ -228,6 +228,14 @@ class Predictor(BasePredictor):
         # 图像编码到 latent
         vae_encode = VAEEncode()
         latent = vae_encode.encode(self.vae, image_tensor)[0]
+        
+        # 诊断信息
+        print(f"[Predict] Latent shape: {latent.shape}")
+        print(f"[Predict] Latent dtype: {latent.dtype}")
+        print(f"[Predict] Latent min: {latent.min().item():.3f}")
+        print(f"[Predict] Latent max: {latent.max().item():.3f}")
+        print(f"[Predict] Latent mean: {latent.mean().item():.3f}")
+        print(f"[Predict] Latent std: {latent.std().item():.3f}")
 
         # 设置随机种子
         if seed == -1:
