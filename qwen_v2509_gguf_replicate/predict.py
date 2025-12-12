@@ -178,11 +178,6 @@ class Predictor(BasePredictor):
             VAEEncode,
             VAEDecode,
         )
-
-        print(f"[Predict] Processing images with prompt: {prompt}")
-        print(f"[Predict] Input image path: {image}")
-        print(f"[Predict] Image2: {image2}")
-        print(f"[Predict] Image3: {image3}")
         
         # 加载图像列表
         images = []
@@ -194,31 +189,31 @@ class Predictor(BasePredictor):
                 
             img_str = str(img_path)
             if not os.path.exists(img_str):
-                print(f"[Predict] Warning: Image{idx} file not found: {img_str}, skipping...")
+                # print(f"[Predict] Warning: Image{idx} file not found: {img_str}, skipping...")
                 continue
                 
             try:
                 img = Image.open(img_str).convert("RGB")
-                print(f"[Predict] Image{idx} loaded: {img.size}")
+                # print(f"[Predict] Image{idx} loaded: {img.size}")
                 images.append(img)
             except Exception as e:
-                print(f"[Predict] Error loading image{idx}: {e}")
+                # print(f"[Predict] Error loading image{idx}: {e}")
                 raise
         
         if not images:
             raise ValueError("至少需要提供一张输入图像")
         
-        print(f"[Predict] Total images loaded: {len(images)}")
+        # print(f"[Predict] Total images loaded: {len(images)}")
         
         # 使用第一张图像的尺寸
         first_image = images[0]
         width, height = first_image.size
-        print(f"[Predict] Base image dimensions: {width}x{height}")
+        # print(f"[Predict] Base image dimensions: {width}x{height}")
 
         # 确保尺寸是 8 的倍数
         width = (width // 8) * 8
         height = (height // 8) * 8
-        print(f"[Predict] Adjusted dimensions (multiple of 8): {width}x{height}")
+        # print(f"[Predict] Adjusted dimensions (multiple of 8): {width}x{height}")
         
         # 调整所有图像尺寸
         processed_images = []
@@ -231,7 +226,7 @@ class Predictor(BasePredictor):
         for idx, img in enumerate(images, 1):
             if img.size != (width, height):
                 img = img.resize((width, height), resize_filter)
-                print(f"[Predict] Image{idx} resized to {width}x{height}")
+                # print(f"[Predict] Image{idx} resized to {width}x{height}")
             processed_images.append(img)
 
         # 转换为 tensor
@@ -240,7 +235,7 @@ class Predictor(BasePredictor):
             image_np = np.array(img).astype(np.float32) / 255.0
             image_tensor = torch.from_numpy(image_np).unsqueeze(0)
             image_tensors.append(image_tensor)
-            print(f"[Predict] Image{idx} tensor shape: {image_tensor.shape}")
+            # print(f"[Predict] Image{idx} tensor shape: {image_tensor.shape}")
 
         # 使用 TextEncodeQwenImageEditPlus 节点（如果可用）
         # 否则回退到单图像模式
@@ -260,20 +255,20 @@ class Predictor(BasePredictor):
                 if hasattr(module, "TextEncodeQwenImageEditPlus"):
                     TextEncodeQwenImageEditPlus = module.TextEncodeQwenImageEditPlus
                     use_multi_image = True
-                    print(f"[Predict] Found TextEncodeQwenImageEditPlus at {import_path}")
+                    # print(f"[Predict] Found TextEncodeQwenImageEditPlus at {import_path}")
                     break
             except (ImportError, AttributeError):
                 continue
         
         if not use_multi_image:
-            print("[Predict] TextEncodeQwenImageEditPlus not found, using single image mode")
+            # print("[Predict] TextEncodeQwenImageEditPlus not found, using single image mode")
             if len(image_tensors) > 1:
-                print("[Predict] Warning: Multiple images provided but multi-image node not available, using first image only")
+                # print("[Predict] Warning: Multiple images provided but multi-image node not available, using first image only")
                 image_tensors = [image_tensors[0]]
 
         if use_multi_image and TextEncodeQwenImageEditPlus and len(image_tensors) > 1:
             # 多图像编辑模式
-            print(f"[Predict] Encoding with {len(image_tensors)} images...")
+            # print(f"[Predict] Encoding with {len(image_tensors)} images...")
             text_encode = TextEncodeQwenImageEditPlus()
             
             # 准备图像输入（最多3张）
@@ -324,7 +319,7 @@ class Predictor(BasePredictor):
                 )[0]
         else:
             # 单图像模式 - 使用第一张图像
-            print("[Predict] Using single image mode...")
+            # print("[Predict] Using single image mode...")
             from nodes import CLIPTextEncode
             
             clip_encode = CLIPTextEncode()
@@ -336,19 +331,19 @@ class Predictor(BasePredictor):
         latent = vae_encode.encode(self.vae, image_tensors[0])[0]
         
         # 诊断信息 - latent 是字典，包含 'samples' 键
-        if isinstance(latent, dict) and 'samples' in latent:
-            latent_samples = latent['samples']
-            print(f"[Predict] Latent type: dict with 'samples' key")
-            print(f"[Predict] Latent samples shape: {latent_samples.shape}")
-            print(f"[Predict] Latent samples dtype: {latent_samples.dtype}")
-            print(f"[Predict] Latent samples min: {latent_samples.min().item():.3f}")
-            print(f"[Predict] Latent samples max: {latent_samples.max().item():.3f}")
-            print(f"[Predict] Latent samples mean: {latent_samples.mean().item():.3f}")
-            print(f"[Predict] Latent samples std: {latent_samples.std().item():.3f}")
-        else:
-            print(f"[Predict] Latent type: {type(latent)}")
-            if isinstance(latent, dict):
-                print(f"[Predict] Latent keys: {list(latent.keys())}")
+        # if isinstance(latent, dict) and 'samples' in latent:
+        #     latent_samples = latent['samples']
+        #     print(f"[Predict] Latent type: dict with 'samples' key")
+        #     print(f"[Predict] Latent samples shape: {latent_samples.shape}")
+        #     print(f"[Predict] Latent samples dtype: {latent_samples.dtype}")
+        #     print(f"[Predict] Latent samples min: {latent_samples.min().item():.3f}")
+        #     print(f"[Predict] Latent samples max: {latent_samples.max().item():.3f}")
+        #     print(f"[Predict] Latent samples mean: {latent_samples.mean().item():.3f}")
+        #     print(f"[Predict] Latent samples std: {latent_samples.std().item():.3f}")
+        # else:
+        #     print(f"[Predict] Latent type: {type(latent)}")
+        #     if isinstance(latent, dict):
+        #         print(f"[Predict] Latent keys: {list(latent.keys())}")
 
         # 设置随机种子
         if seed == -1:
@@ -374,7 +369,7 @@ class Predictor(BasePredictor):
         decoded = vae_decode.decode(self.vae, samples)[0]
 
         # 转换为 PIL Image
-        output_np = (decoded.squeeze(0).cpu().numpy() * 255).astype(np.uint8)
+        output_np = (decoded.squeeze(0).detach().cpu().numpy() * 255).astype(np.uint8)
         output_image = Image.fromarray(output_np)
 
         # 保存输出
