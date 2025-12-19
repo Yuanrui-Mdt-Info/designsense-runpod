@@ -28,7 +28,6 @@ build:
     - "accelerate==1.12.0"
     - "peft==0.18.0"
     - "safetensors==0.4.5"
-    - "huggingface-hub==0.26.2"
     
     # Image Processing
     - "opencv-python==4.10.0.84"
