@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # 1. 确保已安装依赖
+pip uninstall -y unsloth unsloth_zoo torch torchvision torchaudio xformers trl transformers
 pip install -r requirements.txt
 
 # === 修改点 1: 设置 Hugging Face 缓存路径到 /workspace，避免下载到临时目录 ===
@@ -9,7 +10,7 @@ export HF_HOME="/workspace/huggingface"
 # 2. 自动下载 diffusers 官方训练脚本 (如果不存在)
 if [ ! -f "train_text_to_image_lora.py" ]; then
     echo "正在下载官方训练脚本..."
-    wget https://raw.githubusercontent.com/huggingface/diffusers/main/examples/text_to_image/train_text_to_image_lora.py
+    wget https://raw.githubusercontent.com/huggingface/diffusers/v0.36.0/examples/text_to_image/train_text_to_image_lora.py
 fi
 
 # 3. 设置环境变量
