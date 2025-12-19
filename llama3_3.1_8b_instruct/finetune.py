@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+# 适配 RunPod 的模型缓存路径
+os.environ["HF_HOME"] = "/workspace/huggingface_cache"
+
 from unsloth import FastLanguageModel
 from unsloth.chat_templates import get_chat_template
 import torch
