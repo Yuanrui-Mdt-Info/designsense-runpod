@@ -46,20 +46,22 @@ print("正在处理 Chat Template...")
 # 使用 Unsloth 提供的 Chat Template 工具，自动适配 Llama-3.1
 tokenizer = get_chat_template(
     tokenizer,
-    chat_template = "llama-3.1",
-    mapping = {"role" : "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # 根据数据集格式调整映射
+    chat_template="llama-3.1",
+    mapping={"role": "from", "content" : "value", "user" : "human", "assistant" : "gpt"}, # 根据数据集格式调整映射
 )
+
 
 def formatting_prompts_func(examples):
     convos = examples["conversations"]
-    texts = [tokenizer.apply_chat_template(convo, tokenize = False, add_generation_prompt = False) for convo in convos]
-    return { "text" : texts, }
+    texts = [tokenizer.apply_chat_template(convo, tokenize=False, add_generation_prompt=False) for convo in convos]
+    return {"text": texts}
 
 # 加载示例数据集 (ShareGPT 格式)
 # 注意：这里改用了 mlabonne/FineTome-100k 的一部分作为示例，因为它已经是 Chat 格式
 # 如果你使用 Alpaca 格式 (Instruction/Input/Output)，你需要将其转换为 Chat 格式
 print("正在加载数据...")
 dataset = load_dataset("mlabonne/FineTome-100k", split = "train[:1%]") # 仅取 1% 用于演示
+# dataset = load_dataset("json", data_files="my_train_data.jsonl", split="train")
 dataset = dataset.map(formatting_prompts_func, batched = True)
 
 # 5. 训练参数配置
@@ -76,7 +78,7 @@ trainer = SFTTrainer(
         per_device_train_batch_size = 2,
         gradient_accumulation_steps = 4,
         warmup_steps = 5,
-        max_steps = 60,
+        max_steps = 60, # 60 just for testing
         learning_rate = 2e-4,
         fp16 = not torch.cuda.is_bf16_supported(),
         bf16 = torch.cuda.is_bf16_supported(),
