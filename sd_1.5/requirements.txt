@@ -1,0 +1,13 @@
+diffusers
+transformers
+accelerate
+ftfy
+albumentations
+opencv-python
+bitsandbytes
+scipy
+torch
+torchvision
+xformers
+peft
+datasets
