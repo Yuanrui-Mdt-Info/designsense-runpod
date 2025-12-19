@@ -1,0 +1,38 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
+build:
+  gpu: true
+  cuda: "12.4"
+  python_version: "3.11"
+
+  system_packages:
+    - git
+    - git-lfs
+    - wget
+    - curl
+    - libgl1-mesa-glx
+    - libglib2.0-0
+    - libsm6
+    - libxext6
+    - libxrender-dev
+  
+  python_packages:
+    # Core DL Framework (Stable versions)
+    - "torch==2.5.1"
+    - "torchvision==0.20.1"
+    
+    # Hugging Face Ecosystem
+    - "diffusers==0.36.0"
+    - "transformers==4.46.1"
+    - "accelerate==1.12.0"
+    - "peft==0.18.0"
+    - "safetensors==0.4.5"
+    - "huggingface-hub==0.26.2"
+    
+    # Image Processing
+    - "opencv-python==4.10.0.84"
+    - "numpy==1.26.4"
+    - "pillow==10.4.0"
+
+predict: "predict.py:Predictor"
