@@ -11,3 +11,4 @@ torchvision
 xformers
 peft
 datasets
+tensorboard

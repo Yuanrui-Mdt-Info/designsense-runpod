@@ -24,7 +24,7 @@ export DATASET_NAME="lambdalabs/pokemon-blip-captions" # 示例数据集，请�
 # --resolution=512: SD 1.5 标准分辨率
 # --train_batch_size=1: 显存不足时设为 1
 echo "开始训练..."
-accelerate launch --mixed_precision="fp16" train_text_to_image_lora.py \
+accelerate launch --mixed_precision="fp16" --num_processes=1 train_text_to_image_lora.py \
   --pretrained_model_name_or_path=$MODEL_NAME \
   --dataset_name=$DATASET_NAME \
   --dataloader_num_workers=4 \
