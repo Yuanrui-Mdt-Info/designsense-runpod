@@ -15,13 +15,13 @@ LCM_LORA_ID = "latent-consistency/lcm-lora-sdv1-5"
 
 class Predictor(BasePredictor):
     def setup(self) -> None:
-        print("Loading pipeline from build cache...")
+        print("Loading pipeline ...")
         
         # 直接加载构建阶段下载好的模型
         self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-            "/model_cache",  # 对应 cog.yaml 里创建的目录
+            BASE_MODEL_ID,
             torch_dtype=torch.float16,
-            local_files_only=True # 确保不联网
+            cache_dir="model_cache"
         ).to("cuda")
 
         # Set up LCM Scheduler
@@ -30,10 +30,9 @@ class Predictor(BasePredictor):
         # Load LCM LoRA
         print("Loading LCM LoRA...")
         self.pipe.load_lora_weights(
-            "/model_cache/lcm_lora", 
+            LCM_LORA_ID, 
             adapter_name="lcm",
-            local_files_only=True,
-            weight_name="pytorch_lora_weights.safetensors"
+            cache_dir="model_cache"
         )
         self.pipe.set_adapters(["lcm"], adapter_weights=[1.0])
         

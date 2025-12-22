@@ -36,26 +36,8 @@ build:
     - "numpy==2.2.6"
     - "pillow==10.2.0"
 
-  run:
-    # 1. 安装 pget (这是 Replicate 官方推荐的高速下载器)
-    - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.11.0/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
-    
-    # 2. 创建模型目录
-    - mkdir -p /model_cache
-
-    # 3. 下载模型 (注意：这里你需要找到模型的真实下载直链)
-    # ⚠️ SD 1.5 / Realistic Vision 通常是文件夹结构，稍微有点麻烦。
-    # 推荐：下载 safetensors 单文件版本（如果 pipeline 支持），或者打包好的 tar 文件。
-    
-    # 方案 A: 如果能找到 safetensors 单文件 (最简单)
-    # - pget -f https://huggingface.co/SG161222/Realistic_Vision_V6.0_B1_noVAE/resolve/main/Realistic_Vision_V6.0_B1_noVAE.safetensors model_cache/model.safetensors
-    
-    # 方案 B (针对你的情况): 使用 Python 脚本在构建时下载 (更通用)
-    # 这种方式兼容性最好，因为它利用 diffusers 自动处理文件夹结构
-    - python3 -c 'import torch; from diffusers import StableDiffusionImg2ImgPipeline; pipe = StableDiffusionImg2ImgPipeline.from_pretrained("SG161222/Realistic_Vision_V6.0_B1_noVAE", torch_dtype=torch.float16); pipe.save_pretrained("/model_cache")'
-    
-    # 4. 下载 LCM LoRA
-    # - python3 -c 'import torch; from diffusers import StableDiffusionImg2ImgPipeline; pipe = StableDiffusionImg2ImgPipeline.from_pretrained("model_cache", torch_dtype=torch.float16); pipe.load_lora_weights("latent-consistency/lcm-lora-sdv1-5"); pipe.save_lora_weights("model_cache/lcm_lora")'
-    - python3 -c 'from huggingface_hub import snapshot_download; snapshot_download(repo_id="latent-consistency/lcm-lora-sdv1-5", local_dir="/model_cache/lcm_lora", local_dir_use_symlinks=False)'
+  # run:
+  #   # 必须安装 pget 才能在 Python 脚本里调用它
+  #   - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.11.0/pget_linux_x86_64" && chmod +x /usr/local/bin/pget
 
 predict: "predict.py:Predictor"
