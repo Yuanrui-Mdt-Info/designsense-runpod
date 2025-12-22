@@ -19,7 +19,7 @@ class Predictor(BasePredictor):
         
         # 直接加载构建阶段下载好的模型
         self.pipe = StableDiffusionImg2ImgPipeline.from_pretrained(
-            "model_cache",  # 对应 cog.yaml 里创建的目录
+            "/model_cache",  # 对应 cog.yaml 里创建的目录
             torch_dtype=torch.float16,
             local_files_only=True # 确保不联网
         ).to("cuda")
@@ -30,7 +30,7 @@ class Predictor(BasePredictor):
         # Load LCM LoRA
         print("Loading LCM LoRA...")
         self.pipe.load_lora_weights(
-            "model_cache/lcm_lora", 
+            "/model_cache/lcm_lora", 
             adapter_name="lcm",
             local_files_only=True
         )
