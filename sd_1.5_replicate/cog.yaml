@@ -17,7 +17,7 @@ build:
     - libsm6
     - libxext6
     - libxrender-dev
-    - lsbxrender1
+    - libxrender1
   
   python_packages:
     # Core DL Framework (Stable versions)
