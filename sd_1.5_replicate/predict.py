@@ -32,7 +32,8 @@ class Predictor(BasePredictor):
         self.pipe.load_lora_weights(
             "/model_cache/lcm_lora", 
             adapter_name="lcm",
-            local_files_only=True
+            local_files_only=True,
+            weight_name="pytorch_lora_weights.safetensors"
         )
         self.pipe.set_adapters(["lcm"], adapter_weights=[1.0])
         
