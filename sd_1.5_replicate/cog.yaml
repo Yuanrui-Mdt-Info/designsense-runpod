@@ -11,11 +11,13 @@ build:
     - git-lfs
     - wget
     - curl
-    - libgl1-mesa-glx
+    - libgl1
+    - libglx-mesa0
     - libglib2.0-0
     - libsm6
     - libxext6
     - libxrender-dev
+    - lsbxrender1
   
   python_packages:
     # Core DL Framework (Stable versions)
