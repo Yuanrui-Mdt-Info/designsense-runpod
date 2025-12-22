@@ -19,20 +19,20 @@ build:
   
   python_packages:
     # Core DL Framework (Stable versions)
-    - "torch==2.5.1"
-    - "torchvision==0.20.1"
+    - "torch==2.8.0"
+    - "torchvision==0.23.0"
     
     # Hugging Face Ecosystem
     - "diffusers==0.36.0"
     - "transformers==4.57.3"
     - "accelerate==1.12.0"
     - "peft==0.18.0"
-    - "safetensors==0.4.5"
+    - "safetensors==0.6.2"
     
     # Image Processing
-    - "opencv-python==4.10.0.84"
+    - "opencv-python==4.11.0.86"
     - "numpy==1.26.4"
-    - "pillow==10.4.0"
+    - "pillow==11.3.0"
 
   run:
     # 1. 安装 pget (这是 Replicate 官方推荐的高速下载器)
