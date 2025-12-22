@@ -19,8 +19,8 @@ build:
   
   python_packages:
     # Core DL Framework (Stable versions)
-    - "torch==2.8.0"
-    - "torchvision==0.23.0"
+    - "torch==2.7.1"
+    - "torchvision==0.22.1"
     
     # Hugging Face Ecosystem
     - "diffusers==0.36.0"
