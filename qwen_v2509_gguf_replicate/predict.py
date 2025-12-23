@@ -62,12 +62,12 @@ MODELS = {
     },
     # 功能性 LoRA
     "lora_white": {
-        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
         "filename": "split_files/loras/Qwen-Image-Edit-2509-White_to_Scene.safetensors",
         "dest": f"{COMFYUI_PATH}/models/loras/Qwen-Image-Edit-2509-White_to_Scene.safetensors",
     },
     "lora_relight": {
-        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "repo": "Comfy-Org/Qwen-Image-Edit_ComfyUI",
         "filename": "split_files/loras/Qwen-Image-Edit-2509-Relight.safetensors",
         "dest": f"{COMFYUI_PATH}/models/loras/Qwen-Image-Edit-2509-Relight.safetensors",
     },
