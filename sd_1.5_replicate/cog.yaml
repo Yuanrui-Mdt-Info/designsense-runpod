@@ -35,6 +35,7 @@ build:
     - "opencv-python==4.12.0.88"
     - "numpy==2.2.6"
     - "pillow==10.2.0"
+    - "controlnet-aux==0.0.10"
 
   # run:
   #   # 必须安装 pget 才能在 Python 脚本里调用它
