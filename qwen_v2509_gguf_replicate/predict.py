@@ -207,12 +207,12 @@ class Predictor(BasePredictor):
         self.unet, _ = lora_loader.load_lora_model_only(
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-White_to_Scene.safetensors",
-            strength=0.7
+            strength_model=0.7
         )
         self.unet, _ = lora_loader.load_lora_model_only(
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-Relight.safetensors",
-            strength=0.5
+            strength_model=0.5
         )
         
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
