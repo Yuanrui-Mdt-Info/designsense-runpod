@@ -204,12 +204,12 @@ class Predictor(BasePredictor):
         # 加载功能性 LoRA
         from nodes import LoraLoaderModelOnly
         lora_loader = LoraLoaderModelOnly()
-        self.unet, _ = lora_loader.load_lora_model_only(
+        self.unet = lora_loader.load_lora_model_only(
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-White_to_Scene.safetensors",
             strength_model=0.7
         )
-        self.unet, _ = lora_loader.load_lora_model_only(
+        self.unet = lora_loader.load_lora_model_only(
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-Relight.safetensors",
             strength_model=0.5
