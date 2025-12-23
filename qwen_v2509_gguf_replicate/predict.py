@@ -208,12 +208,12 @@ class Predictor(BasePredictor):
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-White_to_Scene.safetensors",
             strength_model=0.7
-        )
+        )[0]
         self.unet = lora_loader.load_lora_model_only(
             model=self.unet,
             lora_name="Qwen-Image-Edit-2509-Relight.safetensors",
             strength_model=0.5
-        )
+        )[0]
         
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
