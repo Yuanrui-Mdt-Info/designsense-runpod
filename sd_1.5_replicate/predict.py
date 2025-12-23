@@ -161,6 +161,11 @@ class Predictor(BasePredictor):
         seg = self.seg_image_processor.post_process_semantic_segmentation(
             outputs, target_sizes=[image.size[::-1]]
         )[0]
+        
+        # 将 CUDA tensor 转换为 CPU numpy 数组
+        if isinstance(seg, torch.Tensor):
+            seg = seg.cpu().numpy()
+            
         color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
         palette = np.array(ade_palette())
         
