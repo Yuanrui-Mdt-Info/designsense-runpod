@@ -10,8 +10,12 @@ import os
 import sys
 import json
 import subprocess
+import torch
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Tuple, Union
+from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
+import numpy as np
+
 
 # 自动检测 ComfyUI 路径
 # 如果环境变量中有 COMFYUI_PATH 则使用，否则默认为 /ComfyUI (Replicate 环境)
@@ -23,6 +27,7 @@ if COMFYUI_PATH not in sys.path:
 
 from cog import BasePredictor, Input, Path as CogPath
 from PIL import Image
+
 
 # 模型文件信息 - 使用 COMFYUI_PATH 动态构建路径
 MODELS = {
@@ -55,6 +60,17 @@ MODELS = {
         # "filename": "VAE/Qwen_Image-VAE.safetensors",
         # "dest": f"{COMFYUI_PATH}/models/vae/Qwen_Image-VAE.safetensors",
     },
+    # 功能性 LoRA
+    "lora_white": {
+        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "filename": "split_files/loras/Qwen-Image-Edit-2509-White_to_Scene.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/loras/Qwen-Image-Edit-2509-White_to_Scene.safetensors",
+    },
+    "lora_relight": {
+        "repo": "Comfy-Org/Qwen-Image_ComfyUI",
+        "filename": "split_files/loras/Qwen-Image-Edit-2509-Relight.safetensors",
+        "dest": f"{COMFYUI_PATH}/models/loras/Qwen-Image-Edit-2509-Relight.safetensors",
+    },
 }
 
 
@@ -77,6 +93,60 @@ def download_model(repo: str, filename: str, dest: str):
     if local_path != dest:
         os.rename(local_path, dest)
     print(f"[Download] {filename} downloaded to {dest}")
+
+
+def ade_palette():
+    """ADE20K 调色板"""
+    return [[120, 120, 120], [180, 120, 120], [6, 230, 230], [80, 50, 50],
+            [4, 200, 3], [120, 120, 80], [140, 140, 140], [204, 5, 255],
+            [230, 230, 230], [4, 250, 7], [224, 5, 255], [235, 255, 7],
+            [150, 5, 61], [120, 120, 70], [8, 255, 51], [255, 6, 82],
+            [143, 255, 140], [204, 255, 4], [255, 51, 7], [204, 70, 3],
+            [0, 102, 200], [61, 230, 250], [255, 6, 51], [11, 102, 255],
+            [255, 7, 71], [255, 9, 224], [9, 7, 230], [220, 220, 220],
+            [255, 9, 92], [112, 9, 255], [8, 255, 214], [7, 255, 224],
+            [255, 184, 6], [10, 255, 71], [255, 41, 10], [7, 255, 255],
+            [224, 255, 8], [102, 8, 255], [255, 61, 6], [255, 194, 7],
+            [255, 122, 8], [0, 255, 20], [255, 8, 41], [255, 5, 153],
+            [6, 51, 255], [235, 12, 255], [160, 150, 20], [0, 163, 255],
+            [140, 140, 140], [250, 10, 15], [20, 255, 0], [31, 255, 0],
+            [255, 31, 0], [255, 224, 0], [153, 255, 0], [0, 0, 255],
+            [255, 71, 0], [0, 235, 255], [0, 173, 255], [31, 0, 255],
+            [11, 200, 200], [255, 82, 0], [0, 255, 245], [0, 61, 255],
+            [0, 255, 112], [0, 255, 133], [255, 0, 0], [255, 163, 0],
+            [255, 102, 0], [194, 255, 0], [0, 143, 255], [51, 255, 0],
+            [0, 82, 255], [0, 255, 41], [0, 255, 173], [10, 0, 255],
+            [173, 255, 0], [0, 255, 153], [255, 92, 0], [255, 0, 255],
+            [255, 0, 245], [255, 0, 102], [255, 173, 0], [255, 0, 20],
+            [255, 184, 184], [0, 31, 255], [0, 255, 61], [0, 71, 255],
+            [255, 0, 204], [0, 255, 194], [0, 255, 82], [0, 10, 255],
+            [0, 112, 255], [51, 0, 255], [0, 194, 255], [0, 122, 255],
+            [0, 255, 163], [255, 153, 0], [0, 255, 10], [255, 112, 0],
+            [143, 255, 0], [82, 0, 255], [163, 255, 0], [255, 235, 0],
+            [8, 184, 170], [133, 0, 255], [0, 255, 92], [184, 0, 255],
+            [255, 0, 31], [0, 184, 255], [0, 214, 255], [255, 0, 112],
+            [92, 255, 0], [0, 224, 255], [112, 224, 255], [70, 184, 160],
+            [163, 0, 255], [153, 0, 255], [71, 255, 0], [255, 0, 163],
+            [255, 204, 0], [255, 0, 143], [0, 255, 235], [133, 255, 0],
+            [255, 0, 235], [245, 0, 255], [255, 0, 122], [255, 245, 0],
+            [10, 190, 212], [214, 255, 0], [0, 204, 255], [20, 0, 255],
+            [255, 255, 0], [0, 153, 255], [0, 41, 255], [0, 255, 204],
+            [41, 0, 255], [41, 255, 0], [173, 0, 255], [0, 245, 255],
+            [71, 0, 255], [122, 0, 255], [0, 255, 184], [0, 92, 255],
+            [184, 255, 0], [0, 133, 255], [255, 214, 0], [25, 194, 194],
+            [102, 255, 0], [92, 0, 255]]
+
+
+COLOR_MAPPING_RGB = {
+    (120, 120, 120): "wall",
+    (230, 230, 230): "windowpane;window",
+    (8, 255, 51): "door;double;door",
+    (255, 8, 41): "column;pillar",
+}
+
+
+def map_colors_rgb(color: tuple) -> str:
+    return COLOR_MAPPING_RGB.get(color, "unknown")
 
 
 class Predictor(BasePredictor):
@@ -102,6 +172,22 @@ class Predictor(BasePredictor):
         # 预加载模型
         print("[Setup] Loading GGUF models...")
         self._load_models()
+        
+        print("[Setup] Loading segmentation models...")
+        self.seg_image_processor = AutoImageProcessor.from_pretrained(
+            "nvidia/segformer-b5-finetuned-ade-640-640"
+        )
+        self.image_segmentor = SegformerForSemanticSegmentation.from_pretrained(
+            "nvidia/segformer-b5-finetuned-ade-640-640"
+        ).to("cuda")
+        
+        self.control_items = [
+            "windowpane;window",
+            "column;pillar",
+            "door;double;door",
+            "wall", # 不改变墙面颜色
+        ]
+        
         print("[Setup] Complete!")
 
     def _load_models(self):
@@ -115,6 +201,20 @@ class Predictor(BasePredictor):
             unet_name="Qwen-Image-Edit-2509-Q4_K_M.gguf"
         )[0]
         
+        # 加载功能性 LoRA
+        from nodes import LoraLoaderModelOnly
+        lora_loader = LoraLoaderModelOnly()
+        self.unet, _ = lora_loader.load_lora_model_only(
+            model=self.unet,
+            lora_name="Qwen-Image-Edit-2509-White_to_Scene.safetensors",
+            strength=0.7
+        )
+        self.unet, _ = lora_loader.load_lora_model_only(
+            model=self.unet,
+            lora_name="Qwen-Image-Edit-2509-Relight.safetensors",
+            strength=0.5
+        )
+        
         # 加载 CLIP (Text Encoder) - 使用官方 safetensors 格式
         from custom_nodes.ComfyUI_GGUF.nodes import CLIPLoaderGGUF
         clip_loader = CLIPLoaderGGUF()
@@ -127,18 +227,33 @@ class Predictor(BasePredictor):
         from nodes import VAELoader
         vae_loader = VAELoader()
         self.vae = vae_loader.load_vae(vae_name="qwen_image_vae.safetensors")[0]
+    
+    @torch.inference_mode()
+    def segment_image(self, image):
+        """对图像进行语义分割"""
+        # 确保输入是 RGB
+        if image.mode != "RGB":
+            image = image.convert("RGB")
+            
+        pixel_values = self.seg_image_processor(image, return_tensors="pt").pixel_values.to("cuda")
+        with torch.no_grad():
+            outputs = self.image_segmentor(pixel_values)
+
+        seg = self.seg_image_processor.post_process_semantic_segmentation(
+            outputs, target_sizes=[image.size[::-1]]
+        )[0]
+        
+        # 转换为彩色分割图以便匹配
+        color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
+        palette = np.array(ade_palette())
+        for label, color in enumerate(palette):
+            color_seg[seg.cpu() == label, :] = color
+            
+        return color_seg
 
     def predict(
         self,
         image: CogPath = Input(description="输入图像（主图像）"),
-        image2: Optional[CogPath] = Input(
-            description="第二张图像（可选，用于多图像编辑）",
-            default=None,
-        ),
-        image3: Optional[CogPath] = Input(
-            description="第三张图像（可选，用于多图像编辑）",
-            default=None,
-        ),
         prompt: str = Input(
             description="编辑提示词",
             default="",
@@ -148,8 +263,8 @@ class Predictor(BasePredictor):
             default="blurry, low quality, distorted",
         ),
         steps: int = Input(
-            description="推理步数",
-            default=4,
+            description="推理步数 (建议: Lightning模式4步 / 普通模式25-30步)",
+            default=25,
             ge=1,
             le=100,
         ),
@@ -171,8 +286,6 @@ class Predictor(BasePredictor):
         ),
     ) -> CogPath:
         """执行图像编辑推理"""
-        import torch
-        import numpy as np
         from nodes import (
             KSampler,
             VAEEncode,
@@ -180,28 +293,12 @@ class Predictor(BasePredictor):
         )
         
         # 加载图像列表
-        images = []
-        image_paths = [image, image2, image3]
-        
-        for idx, img_path in enumerate(image_paths, 1):
-            if img_path is None:
-                continue
-                
-            img_str = str(img_path)
-            if not os.path.exists(img_str):
-                # print(f"[Predict] Warning: Image{idx} file not found: {img_str}, skipping...")
-                continue
-                
-            try:
-                img = Image.open(img_str).convert("RGB")
-                # print(f"[Predict] Image{idx} loaded: {img.size}")
-                images.append(img)
-            except Exception as e:
-                # print(f"[Predict] Error loading image{idx}: {e}")
-                raise
-        
-        if not images:
-            raise ValueError("至少需要提供一张输入图像")
+        image_str = str(image)
+        if not os.path.exists(image_str):
+            raise ValueError(f"Image file not found: {image_str}")
+            
+        img = Image.open(image_str).convert("RGB")
+        images = [img]
         
         # print(f"[Predict] Total images loaded: {len(images)}")
         
@@ -262,30 +359,24 @@ class Predictor(BasePredictor):
         
         if not use_multi_image:
             # print("[Predict] TextEncodeQwenImageEditPlus not found, using single image mode")
-            if len(image_tensors) > 1:
-                # print("[Predict] Warning: Multiple images provided but multi-image node not available, using first image only")
-                image_tensors = [image_tensors[0]]
+            pass
 
-        if use_multi_image and TextEncodeQwenImageEditPlus and len(image_tensors) > 1:
-            # 多图像编辑模式
-            # print(f"[Predict] Encoding with {len(image_tensors)} images...")
+        if use_multi_image and TextEncodeQwenImageEditPlus:
+            # 单图像编辑模式
             text_encode = TextEncodeQwenImageEditPlus()
             
-            # 准备图像输入（最多3张）
-            image1_tensor = image_tensors[0] if len(image_tensors) > 0 else None
-            image2_tensor = image_tensors[1] if len(image_tensors) > 1 else None
-            image3_tensor = image_tensors[2] if len(image_tensors) > 2 else None
+            # 准备图像输入
+            image1_tensor = image_tensors[0]
             
             # 编码 positive conditioning
-            # TextEncodeQwenImageEditPlus 的 encode 方法签名可能不同，需要根据实际实现调整
             try:
                 positive_cond = text_encode.encode(
                     clip=self.clip,
                     vae=self.vae,
                     text=prompt if prompt else "",
                     image1=image1_tensor,
-                    image2=image2_tensor,
-                    image3=image3_tensor,
+                    image2=None,
+                    image3=None,
                 )[0]
             except TypeError:
                 # 如果参数不匹配，尝试其他调用方式
@@ -294,11 +385,11 @@ class Predictor(BasePredictor):
                     prompt if prompt else "",
                     self.vae,
                     image1_tensor,
-                    image2_tensor,
-                    image3_tensor,
+                    None,
+                    None,
                 )[0]
             
-            # 编码 negative conditioning（如果没有提供负面提示词，使用空字符串）
+            # 编码 negative conditioning
             try:
                 negative_cond = text_encode.encode(
                     clip=self.clip,
@@ -372,8 +463,46 @@ class Predictor(BasePredictor):
         output_np = (decoded.squeeze(0).detach().cpu().numpy() * 255).astype(np.uint8)
         output_image = Image.fromarray(output_np)
 
+        # --- 新增：后处理合成逻辑 ---
+        # 使用第一张输入图作为结构参考
+        ref_image = processed_images[0] # 这是已经 resize 过的输入图
+        
+        # 如果 output_image 尺寸和 ref_image 不一致，调整 output
+        if output_image.size != ref_image.size:
+            output_image = output_image.resize(ref_image.size, resize_filter)
+
+        print("[Predict] Applying structural preservation mask...")
+        
+        # 1. 对原图进行分割
+        real_seg = self.segment_image(ref_image)
+        
+        # 2. 提取需要保留的物体 Mask
+        unique_colors = np.unique(real_seg.reshape(-1, real_seg.shape[2]), axis=0)
+        unique_colors = [tuple(color) for color in unique_colors]
+        
+        chosen_colors = []
+        for color in unique_colors:
+            item_name = map_colors_rgb(color)
+            if item_name in self.control_items:
+                chosen_colors.append(color)
+        
+        # 生成二值 Mask (1 = 保留原图, 0 = 使用生成图)
+        mask = np.zeros((real_seg.shape[0], real_seg.shape[1]), dtype=np.float32)
+        for color in chosen_colors:
+            color_matches = (real_seg == color).all(axis=2)
+            mask[color_matches] = 1.0
+            
+        # 3. 图像合成： Final = Original * Mask + Generated * (1 - Mask)
+        mask_pil = Image.fromarray((mask * 255).astype(np.uint8)).convert("L")
+        
+        # 边缘羽化，使接缝更自然
+        from PIL import ImageFilter
+        mask_pil = mask_pil.filter(ImageFilter.GaussianBlur(radius=3))
+        
+        final_image = Image.composite(ref_image, output_image, mask_pil)
+        
         # 保存输出
         output_path = "/tmp/output.png"
-        output_image.save(output_path)
+        final_image.save(output_path)
         print(f"[Predict] Done! Seed: {seed}")
         return CogPath(output_path)
