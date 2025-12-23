@@ -3,7 +3,7 @@
 
 build:
   gpu: true
-  cuda: "12.4"
+  # cuda: "12.4"
   python_version: "3.11"
   
   system_packages:
@@ -18,9 +18,9 @@ build:
     - libxrender-dev
 
   python_packages:
-    - torch==2.5.1
-    - torchvision==0.20.1
-    - torchaudio==2.5.1
+    # - torch==2.5.1  # replicate自动安装
+    # - torchvision==0.20.1  # replicate自动安装
+    # - torchaudio==2.5.1  # replicate自动安装
     - numpy<2
     - pillow>=10.0.0
     - aiohttp

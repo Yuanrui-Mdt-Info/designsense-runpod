@@ -3,7 +3,7 @@
 
 build:
   gpu: true
-  cuda: "12.8"
+  # cuda: "12.8"
   python_version: "3.11"
 
   system_packages:
@@ -21,8 +21,8 @@ build:
   
   python_packages:
     # Core DL Framework (Stable versions)
-    - "torch==2.9.1"
-    - "torchvision==0.24.1"
+    # - "torch==2.9.1"  # replicate自动安装
+    # - "torchvision==0.24.1"  # replicate自动安装
     
     # Hugging Face Ecosystem
     - "diffusers==0.36.0"
