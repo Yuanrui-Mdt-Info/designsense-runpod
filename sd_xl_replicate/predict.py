@@ -20,7 +20,6 @@ class Predictor(BasePredictor):
         controlnet_depth = ControlNetModel.from_pretrained(
             "xinsir/controlnet-depth-sdxl-1.0",
             torch_dtype=torch.float16,
-            variant="fp16",
         )
         
         controlnet_tile = ControlNetModel.from_pretrained(
