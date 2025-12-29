@@ -71,6 +71,26 @@ class Predictor(BasePredictor):
         strength: float = Input(
             description="Denoise 强度 (img2img)", default=0.75, ge=0.0, le=1.0
         ),
+        # ControlNet Depth 参数
+        depth_scale: float = Input(
+            description="Depth ControlNet 强度", default=0.35, ge=0.0, le=1.0
+        ),
+        depth_start: float = Input(
+            description="Depth ControlNet 开始比例", default=0.25, ge=0.0, le=1.0
+        ),
+        depth_end: float = Input(
+            description="Depth ControlNet 结束比例", default=0.8, ge=0.0, le=1.0
+        ),
+        # ControlNet Tile 参数
+        tile_scale: float = Input(
+            description="Tile ControlNet 强度", default=0.15, ge=0.0, le=1.0
+        ),
+        tile_start: float = Input(
+            description="Tile ControlNet 开始比例", default=0.6, ge=0.0, le=1.0
+        ),
+        tile_end: float = Input(
+            description="Tile ControlNet 结束比例", default=1.0, ge=0.0, le=1.0
+        ),
         seed: int = Input(description="随机种子 (留空则随机)", default=None),
     ) -> Path:
         """运行 SDXL ControlNet 室内设计转换"""
@@ -99,11 +119,10 @@ class Predictor(BasePredictor):
             strength=strength,  # denoise = 0.75
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
-            # 双 ControlNet 强度: [depth, tile]
-            controlnet_conditioning_scale=[0.35, 0.15],
-            # 双 ControlNet 时间范围
-            control_guidance_start=[0.25, 0.6],
-            control_guidance_end=[0.8, 1.0],
+            # 双 ControlNet 参数: [depth, tile]
+            controlnet_conditioning_scale=[depth_scale, tile_scale],
+            control_guidance_start=[depth_start, tile_start],
+            control_guidance_end=[depth_end, tile_end],
             generator=generator,
         ).images[0]
         
