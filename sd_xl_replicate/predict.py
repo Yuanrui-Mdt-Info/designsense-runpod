@@ -53,7 +53,8 @@ class Predictor(BasePredictor):
         self.pipe.enable_xformers_memory_efficient_attention()
         
         # 深度检测器
-        self.zoe_detector = ZoeDetector.from_pretrained("lllyasviel/Annotators")
+        # self.zoe_detector = ZoeDetector.from_pretrained("lllyasviel/Annotators")
+        self.midas_detector = MidasDetector.from_pretrained("lllyasviel/Annotators")
 
     def predict(
         self,
@@ -114,7 +115,7 @@ class Predictor(BasePredictor):
         new_h = (int(h * scale) // 8) * 8
         init_image = init_image.resize((new_w, new_h), Image.Resampling.LANCZOS)
         
-        depth_image = self.zoe_detector(init_image)
+        depth_image = self.midas_detector(init_image)
         depth_image = depth_image.resize(init_image.size)
 
         # 生成 - 双 ControlNet 配置
