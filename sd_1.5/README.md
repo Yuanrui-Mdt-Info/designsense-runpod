@@ -14,11 +14,45 @@
 
 ## 快速开始
 
-### 1. 安装与准备
+### 0. RunPod Pod 环境初始化（推荐）
+
+如果你在 RunPod Pod 上运行，可以使用一键初始化脚本：
+
+```bash
+# 上传代码到 Pod 后
+cd /workspace/sd_1.5  # 或你的项目路径
+chmod +x setup_pod.sh
+./setup_pod.sh
+```
+
+```bash
+# Ubuntu/Debian
+apt-get update
+apt-get install -y libcairo2-dev libgirepository1.0-dev pkg-config python3-dev
+
+# 然后重新安装
+pip install -r requirements.txt
+```
+
+该脚本会自动：
+1. 安装系统依赖（包括 cairo、GL 库等）
+2. 安装 PyTorch 和 CUDA 支持
+3. 安装核心 Python 依赖（精简版，避免不必要的包）
+4. 配置 HuggingFace 缓存目录（优先使用网络卷）
+5. 设置环境变量
+6. 验证安装
+
+**注意**: 脚本会自动检测网络卷（`/runpod-volume`），如果存在会使用它作为模型缓存目录，避免重复下载。
+
+### 1. LoRA 微调（可选）
+
+如果你想进行 LoRA 微调：
+
 ```bash
 chmod +x train.sh
 ./train.sh
 ```
+
 该脚本会自动：
 1. 安装 Python 依赖。
 2. 下载 Hugging Face 官方的 `train_text_to_image_lora.py` 脚本。
@@ -54,16 +88,17 @@ python inference.py \
   --mode img2img \
   --prompt "modern interior design" \
   --image_path "/workspace/init_image.png" \
-  --output "result.png"
+  --output "/workspace/image_gen_debug/result.png"
 ```
 
 #### 高级重绘（ControlNet + 语义分割）
 ```bash
 python inference.py \
   --mode controlnet \
-  --prompt "modern interior design, minimalist, 8k, photorealistic" \
+  --prompt "japanese (bedroom:1.2), traditional japanese, shoji screens, tatami mats, low table, low furniture, calligraphy, kanagawa wave pattern, light wood, bamboo, neutral colors, traditional sliding doors, japanese aesthetic, (interior design, indoor space, furniture layout, ambient lighting, cozy atmosphere:0.8), best quality, detailed, realistic" \
+  --negative_prompt "modern, western, ornate, colorful, busy, cluttered, curtains, high furniture, cartoon, disfigured, deformed, ugly, blurry, people, human, text, watermark" \
   --image_path "/workspace/init_image.png" \
-  --output "result.png" \
+  --output "/workspace/image_gen_debug/result.png" \
   --strength 0.5 \
   --guidance_scale 1.5 \
   --num_inference_steps 6
@@ -123,10 +158,11 @@ with open("output.png", "wb") as f:
 
 ## 文件结构
 
-- `train.sh`: 一键启动训练的脚本
+- `setup_pod.sh`: **Pod 环境初始化脚本**（推荐首次使用）
+- `train.sh`: LoRA 微调训练脚本
 - `inference.py`: 推理脚本，支持 txt2img、img2img 和 controlnet 模式
 - `rp_handler.py`: RunPod serverless handler，用于部署到 RunPod
-- `requirements.txt`: 依赖列表
+- `requirements.txt`: 完整依赖列表（包含 Jupyter 等，可能包含不必要的依赖）
 
 ## 注意事项
 

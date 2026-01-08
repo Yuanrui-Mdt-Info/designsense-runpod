@@ -322,10 +322,13 @@ def generate_image_controlnet(
         items_list=segment_items,
         items_to_remove=control_items,
     )
-    mask = np.zeros_like(real_seg)
-    for color in chosen_colors:
-        color_matches = (real_seg == color).all(axis=2)
-        mask[color_matches] = 1
+    # 反转逻辑 - 标记整个房间，然后移除保护区域
+    mask = np.ones_like(real_seg)  # 先全部标记为 1（要重绘）
+    # 移除保护区域（control_items）
+    for color, item in zip(unique_colors, segment_items):
+        if item in control_items:  # 如果是保护项
+            color_matches = (real_seg == color).all(axis=2)
+            mask[color_matches] = 0  # 标记为 0（不重绘）
 
     segmentation_cond_image = Image.fromarray(real_seg).convert("RGB")
     mask_image = Image.fromarray((mask * 255).astype(np.uint8)).convert("RGB")
