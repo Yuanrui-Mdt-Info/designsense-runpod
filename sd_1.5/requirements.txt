@@ -194,3 +194,7 @@ xformers==0.0.33.post2
 xxhash==3.6.0
 yarl==1.22.0
 zipp==1.0.0
+
+# Additional dependencies for ControlNet and RunPod deployment
+controlnet-aux==0.0.10
+runpod>=1.0.0
