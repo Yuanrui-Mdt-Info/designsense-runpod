@@ -337,14 +337,14 @@ class Predictor(BasePredictor):
                 # 从 Hugging Face 加载 LoRA（会自动下载和缓存）
                 self.pipe.load_lora_weights(
                     lora_config["lora_id"],
-                    filename=lora_config["filename"],
+                    weight_name=lora_config["filename"],
                     adapter_name=lora_config["adapter_name"],
                 )
                 adapter_list.append(lora_config["adapter_name"])
                 adapter_weights.append(lora_config["lora_weight"])
                 # print(f"Successfully loaded LoRA: {lora_key}")
             except Exception as e:
-                print(f"Failed to load LoRA {lora_key}")
+                print(f"Failed to load LoRA {lora_key}: {e}")
         
         self.pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
         print(f"Active adapters: {self.pipe.get_active_adapters()}")

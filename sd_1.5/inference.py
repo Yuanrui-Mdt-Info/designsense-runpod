@@ -340,7 +340,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["cyberpunk_interior"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         
@@ -351,7 +351,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["floor_plan_interior"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
@@ -361,7 +361,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["clothing_store_interior"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
@@ -371,7 +371,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["japanese_bedroom"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
@@ -381,7 +381,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["modern_living_room"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
@@ -391,7 +391,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["tropical_exterior"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
@@ -401,7 +401,7 @@ def generate_image_controlnet(
         lora_config = STYLIZATION_LORA_CONFIG["tropical_interior"]
         pipe.load_lora_weights(
             lora_config["lora_id"],
-            filename=lora_config["filename"],
+            weight_name=lora_config["filename"],
             adapter_name=lora_config["adapter_name"],
         )
         adapter_list.append(lora_config["adapter_name"])
