@@ -119,13 +119,41 @@ STYLIZATION_LORA_CONFIG = {
         "adapter_name": "cyberpunk_interior",
         "lora_weight": 0.8,
     },
-    "japanese_interior": {
-        "lora_name": "japanese_interior.safetensors",
+    "floor_plan_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_floor_plan_interior_design.safetensors",
+        "adapter_name": "floor_plan_interior",
         "lora_weight": 0.8,
     },
-    "modern_interior": {
-        "lora_name": "modern_interior.safetensors",
+    "clothing_store_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_clothing_store_interior_design.safetensors",
+        "adapter_name": "clothing_store_interior",
         "lora_weight": 0.8,
+    },
+    "japanese_bedroom": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_japan_bedroom.safetensors",
+        "adapter_name": "japanese_bedroom",
+        "lora_weight": 0.8,
+    },
+    "modern_living_room": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_modern_livingroom.safetensors",
+        "adapter_name": "modern_living_room",
+        "lora_weight": 0.8,
+    },
+    "tropical_exterior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_tropical_exterior.safetensors",
+        "adapter_name": "tropical_exterior",
+        "lora_weight": 0.7,
+    },
+    "tropical_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_tropical_interior.safetensors",
+        "adapter_name": "tropical_interior",
+        "lora_weight": 0.7,
     },
 }
 
@@ -318,7 +346,67 @@ def generate_image_controlnet(
         
         adapter_list.append(lora_config["adapter_name"])
         adapter_weights.append(lora_config["lora_weight"])
-
+    
+    if "floor plan" in prompt and "interior" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["floor_plan_interior"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
+    if "clothing store" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["clothing_store_interior"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
+    if "japanese" in prompt and "bedroom" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["japanese_bedroom"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
+    if prompt.startswith("modern") and "living room" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["modern_living_room"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
+    if "tropical" in prompt and "exterior" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["tropical_exterior"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
+    if "tropical" in prompt and "interior" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["tropical_interior"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+    
     pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
     
     # 加载 MLSD 处理器
