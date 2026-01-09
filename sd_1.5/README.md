@@ -16,14 +16,8 @@
 
 ### 0. RunPod Pod 环境初始化（推荐）
 
-如果你在 RunPod Pod 上运行，可以使用一键初始化脚本：
-
-```bash
-# 上传代码到 Pod 后
-cd /workspace/sd_1.5  # 或你的项目路径
-chmod +x setup_pod.sh
-./setup_pod.sh
-```
+增加环境变量:
+    HF_HOME: /workspace/huggingface
 
 ```bash
 # Ubuntu/Debian
@@ -31,6 +25,7 @@ apt-get update
 apt-get install -y libcairo2-dev libgirepository1.0-dev pkg-config python3-dev
 
 # 然后重新安装
+pip uninstall torchaudio
 pip install -r requirements.txt
 ```
 
@@ -93,15 +88,20 @@ python inference.py \
 
 #### 高级重绘（ControlNet + 语义分割）
 ```bash
-python inference.py \
+cd /workspace/designsense-runpod/sd_1.5;python inference.py \
   --mode controlnet \
-  --prompt "japanese (bedroom:1.2), traditional japanese, shoji screens, tatami mats, low table, low furniture, calligraphy, kanagawa wave pattern, light wood, bamboo, neutral colors, traditional sliding doors, japanese aesthetic, (interior design, indoor space, furniture layout, ambient lighting, cozy atmosphere:0.8), best quality, detailed, realistic" \
-  --negative_prompt "modern, western, ornate, colorful, busy, cluttered, curtains, high furniture, cartoon, disfigured, deformed, ugly, blurry, people, human, text, watermark" \
-  --image_path "/workspace/init_image.png" \
+  --prompt "cyberpunk (kitchen:1.2), (night darkness, neon lights, hot pink electric blue purple green neon, bladerunner dystopian, futuristic, LED strips, glowing screens, holographic displays, metallic surfaces, steel glass furniture, angular shapes, smoke fog, matrix code, graffiti walls, polished concrete floor, cyberpunk aesthetic:1.2), (interior design, indoor space, furniture layout, ambient lighting, cozy atmosphere:0.8), best quality, detailed, realistic" \
+  --negative_prompt "daylight, sunlight, bright, natural lighting, cozy, warm, soft, modern minimalist, cartoon, disfigured, deformed, ugly, blurry, people, human, text, watermark" \
+  --image_path "/workspace/image_gen_debug/input02.jpg" \
   --output "/workspace/image_gen_debug/result.png" \
-  --strength 0.5 \
+  --strength 0.78 \
   --guidance_scale 1.5 \
   --num_inference_steps 6
+```
+
+```bash
+cd /workspace/image_gen_debug;git add result.png;git commit -m"update output";git push;
+
 ```
 
 ### 4. RunPod Serverless 部署

@@ -112,6 +112,23 @@ def generate_image_img2img(prompt, image_path, lora_path, output_path="output.pn
 BASE_MODEL_ID = "SG161222/Realistic_Vision_V6.0_B1_noVAE"
 LCM_LORA_ID = "latent-consistency/lcm-lora-sdv1-5"
 
+STYLIZATION_LORA_CONFIG = {
+    "cyberpunk_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_cyberpunk_interior_design.safetensors",
+        "adapter_name": "cyberpunk_interior",
+        "lora_weight": 0.8,
+    },
+    "japanese_interior": {
+        "lora_name": "japanese_interior.safetensors",
+        "lora_weight": 0.8,
+    },
+    "modern_interior": {
+        "lora_name": "modern_interior.safetensors",
+        "lora_weight": 0.8,
+    },
+}
+
 
 def filter_items(
     colors_list: Union[List, np.ndarray],
@@ -285,9 +302,24 @@ def generate_image_controlnet(
     pipe.load_lora_weights(
         LCM_LORA_ID, 
         adapter_name="lcm",
-        cache_dir="model_cache"
+        # cache_dir="model_cache" # 不指定 cache_dir，使用默认的 HF 缓存（会自动持久化）
     )
-    pipe.set_adapters(["lcm"], adapter_weights=[1.0])
+    
+    adapter_list = ["lcm", ]
+    adapter_weights = [1.0, ]
+    
+    if "cyberpunk" in prompt and "interior" in prompt:
+        lora_config = STYLIZATION_LORA_CONFIG["cyberpunk_interior"]
+        pipe.load_lora_weights(
+            lora_config["lora_id"],
+            filename=lora_config["filename"],
+            adapter_name=lora_config["adapter_name"],
+        )
+        
+        adapter_list.append(lora_config["adapter_name"])
+        adapter_weights.append(lora_config["lora_weight"])
+
+    pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
     
     # 加载 MLSD 处理器
     print("正在加载 MLSD 处理器...")
@@ -346,7 +378,9 @@ def generate_image_controlnet(
     generator = torch.Generator("cuda").manual_seed(seed)
 
     # 确保 LCM adapter 激活
-    pipe.set_adapters(["lcm"], adapter_weights=[1.0])
+    # pipe.set_adapters(["lcm"], adapter_weights=[1.0])
+    pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
+    print("已加载的适配器:", pipe.get_active_adapters())
 
     # 运行推理
     print(f"正在生成: '{prompt}'")
