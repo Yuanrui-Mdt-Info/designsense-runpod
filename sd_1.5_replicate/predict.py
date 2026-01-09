@@ -325,8 +325,6 @@ class Predictor(BasePredictor):
         init_image = init_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
         print(f"Input image resized to: {new_width}x{new_height}")
         
-        # 先禁用所有适配器，清理之前的状态
-        self.pipe.disable_adapters()
         adapter_list = ["lcm", ]
         adapter_weights = [1.0, ]
         
@@ -346,7 +344,13 @@ class Predictor(BasePredictor):
                 adapter_weights.append(lora_config["lora_weight"])
                 # print(f"Successfully loaded LoRA: {lora_key}")
             except Exception as e:
-                print(f"Failed to load LoRA {lora_key}: {e}")
+                error_msg = str(e)
+                if "already in use" in error_msg:
+                    print(f"LoRA {lora_key} already loaded, reusing...")
+                    adapter_list.append(lora_config["adapter_name"])
+                    adapter_weights.append(lora_config["lora_weight"])
+                else:
+                    print(f"Failed to load LoRA {lora_key}: {error_msg}")
         
         self.pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
         print(f"Active adapters: {self.pipe.get_active_adapters()}")
