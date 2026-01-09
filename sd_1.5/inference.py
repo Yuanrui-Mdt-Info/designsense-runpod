@@ -131,18 +131,6 @@ STYLIZATION_LORA_CONFIG = {
         "adapter_name": "clothing_store_interior",
         "lora_weight": 0.8,
     },
-    "japanese_bedroom": {
-        "lora_id": "Jkshdiaod/interior-design-lora",
-        "filename": "sd1.5_japan_bedroom.safetensors",
-        "adapter_name": "japanese_bedroom",
-        "lora_weight": 0.8,
-    },
-    "modern_living_room": {
-        "lora_id": "Jkshdiaod/interior-design-lora",
-        "filename": "sd1.5_modern_livingroom.safetensors",
-        "adapter_name": "modern_living_room",
-        "lora_weight": 0.8,
-    },
     "tropical_exterior": {
         "lora_id": "Jkshdiaod/interior-design-lora",
         "filename": "sd1.5_tropical_exterior.safetensors",
@@ -392,44 +380,6 @@ def generate_image_controlnet(
                 adapter_weights.append(lora_config["lora_weight"])
             else:
                 print(f"Failed to load LoRA clothing_store_interior: {error_msg}")
-    
-    if "japanese" in prompt and "bedroom" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["japanese_bedroom"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA japanese_bedroom already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA japanese_bedroom: {error_msg}")
-    
-    if prompt.startswith("modern") and "living room" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["modern_living_room"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA modern_living_room already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA modern_living_room: {error_msg}")
     
     if "tropical" in prompt and "exterior" in prompt:
         lora_config = STYLIZATION_LORA_CONFIG["tropical_exterior"]

@@ -36,18 +36,6 @@ STYLIZATION_LORA_CONFIG = {
         "adapter_name": "clothing_store_interior",
         "lora_weight": 0.8,
     },
-    "japanese_bedroom": {
-        "lora_id": "Jkshdiaod/interior-design-lora",
-        "filename": "sd1.5_japan_bedroom.safetensors",
-        "adapter_name": "japanese_bedroom",
-        "lora_weight": 0.8,
-    },
-    "modern_living_room": {
-        "lora_id": "Jkshdiaod/interior-design-lora",
-        "filename": "sd1.5_modern_livingroom.safetensors",
-        "adapter_name": "modern_living_room",
-        "lora_weight": 0.8,
-    },
     "tropical_exterior": {
         "lora_id": "Jkshdiaod/interior-design-lora",
         "filename": "sd1.5_tropical_exterior.safetensors",
@@ -207,10 +195,6 @@ class Predictor(BasePredictor):
             return "floor_plan_interior"
         elif "clothing store" in prompt_lower:
             return "clothing_store_interior"
-        elif "japanese" in prompt_lower and "bedroom" in prompt_lower:
-            return "japanese_bedroom"
-        elif prompt_lower.startswith("modern") and "living room" in prompt_lower:
-            return "modern_living_room"
         elif "tropical" in prompt_lower and "exterior" in prompt_lower:
             return "tropical_exterior"
         elif "tropical" in prompt_lower and "interior" in prompt_lower:
