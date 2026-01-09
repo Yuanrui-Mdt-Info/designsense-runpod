@@ -90,17 +90,17 @@ python inference.py \
 ```bash
 cd /workspace/designsense-runpod/sd_1.5;python inference.py \
   --mode controlnet \
-  --prompt "cyberpunk (kitchen:1.2), (night darkness, neon lights, hot pink electric blue purple green neon, bladerunner dystopian, futuristic, LED strips, glowing screens, holographic displays, metallic surfaces, steel glass furniture, angular shapes, smoke fog, matrix code, graffiti walls, polished concrete floor, cyberpunk aesthetic:1.2), (interior design, indoor space, furniture layout, ambient lighting, cozy atmosphere:0.8), best quality, detailed, realistic" \
-  --negative_prompt "daylight, sunlight, bright, natural lighting, cozy, warm, soft, modern minimalist, cartoon, disfigured, deformed, ugly, blurry, people, human, text, watermark" \
+  --prompt "japanese (bedroom:1.2), (traditional japanese, shoji screens, tatami mats, low table, low furniture, calligraphy, kanagawa wave pattern, light wood, bamboo, neutral colors, clean lines, simple forms, traditional sliding doors, japanese aesthetic:1.2), (interior design, indoor space, furniture layout, ambient lighting, cozy atmosphere:0.8), best quality, detailed, realistic" \
+  --negative_prompt "modern, western, ornate, colorful, busy, cluttered, curtains, high furniture, cartoon, disfigured, deformed, ugly, blurry, people, human, text, watermark" \
   --image_path "/workspace/image_gen_debug/input02.jpg" \
-  --output "/workspace/image_gen_debug/result.png" \
+  --output "/workspace/image_gen_debug/result02.png" \
   --strength 0.78 \
   --guidance_scale 1.5 \
   --num_inference_steps 6
 ```
 
 ```bash
-cd /workspace/image_gen_debug;git add result.png;git commit -m"update output";git push;
+cd /workspace/image_gen_debug;git add result02.png;git commit -m"update output";git push;
 
 ```
 

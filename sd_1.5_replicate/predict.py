@@ -9,12 +9,58 @@ from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 from controlnet_aux import MLSDdetector
 from PIL import Image
 import shutil
-from typing import Tuple, Union, List
+from typing import Tuple, Union, List, Optional
 import numpy as np
 
 # Model IDs
 BASE_MODEL_ID = "SG161222/Realistic_Vision_V6.0_B1_noVAE"
 LCM_LORA_ID = "latent-consistency/lcm-lora-sdv1-5"
+
+
+STYLIZATION_LORA_CONFIG = {
+    "cyberpunk_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_cyberpunk_interior_design.safetensors",
+        "adapter_name": "cyberpunk_interior",
+        "lora_weight": 0.8,
+    },
+    "floor_plan_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_floor_plan_interior_design.safetensors",
+        "adapter_name": "floor_plan_interior",
+        "lora_weight": 0.8,
+    },
+    "clothing_store_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_clothing_store_interior_design.safetensors",
+        "adapter_name": "clothing_store_interior",
+        "lora_weight": 0.8,
+    },
+    "japanese_bedroom": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_japan_bedroom.safetensors",
+        "adapter_name": "japanese_bedroom",
+        "lora_weight": 0.8,
+    },
+    "modern_living_room": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_modern_livingroom.safetensors",
+        "adapter_name": "modern_living_room",
+        "lora_weight": 0.8,
+    },
+    "tropical_exterior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_tropical_exterior.safetensors",
+        "adapter_name": "tropical_exterior",
+        "lora_weight": 0.7,
+    },
+    "tropical_interior": {
+        "lora_id": "Jkshdiaod/interior-design-lora",
+        "filename": "sd1.5_tropical_interior.safetensors",
+        "adapter_name": "tropical_interior",
+        "lora_weight": 0.7,
+    },
+}
 
 
 def filter_items(
@@ -125,7 +171,7 @@ class Predictor(BasePredictor):
         self.pipe.load_lora_weights(
             LCM_LORA_ID, 
             adapter_name="lcm",
-            cache_dir="model_cache"
+            # cache_dir="model_cache" # 使用默认缓存目录
         )
         self.pipe.set_adapters(["lcm"], adapter_weights=[1.0])
         
@@ -149,6 +195,28 @@ class Predictor(BasePredictor):
         
         # Warmup (optional but good practice)
         # self.pipe(prompt="warmup", image=Image.new('RGB', (512, 512)), num_inference_steps=1)
+    
+    def _select_lora_by_prompt(self, prompt: str):
+        """根据 prompt 选择对应的 LoRA 配置"""
+        prompt_lower = prompt.lower()
+        
+        # 匹配逻辑与 inference.py 保持一致
+        if "cyberpunk" in prompt_lower and "interior" in prompt_lower:
+            return "cyberpunk_interior"
+        elif "floor plan" in prompt_lower and "interior" in prompt_lower:
+            return "floor_plan_interior"
+        elif "clothing store" in prompt_lower:
+            return "clothing_store_interior"
+        elif "japanese" in prompt_lower and "bedroom" in prompt_lower:
+            return "japanese_bedroom"
+        elif prompt_lower.startswith("modern") and "living room" in prompt_lower:
+            return "modern_living_room"
+        elif "tropical" in prompt_lower and "exterior" in prompt_lower:
+            return "tropical_exterior"
+        elif "tropical" in prompt_lower and "interior" in prompt_lower:
+            return "tropical_interior"
+        
+        return None
     
     @torch.inference_mode()
     @torch.autocast("cuda")
@@ -206,7 +274,13 @@ class Predictor(BasePredictor):
             ge=2,
             le=20
         ),
-        seed: int = Input(
+        num_images: int = Input(
+            description="Number of images to generate (1-4 recommended)",
+            default=1,
+            ge=1,
+            le=4
+        ),
+        seed: Optional[int] = Input(
             description="Random seed. Leave blank to randomize the seed",
             default=None
         ),
@@ -221,7 +295,7 @@ class Predictor(BasePredictor):
             ge=0,
             le=100
         )
-    ) -> Path:
+    ) -> List[Path]:
         """Run a single prediction on the model"""
         
         if seed is None:
@@ -250,6 +324,30 @@ class Predictor(BasePredictor):
         
         init_image = init_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
         print(f"Input image resized to: {new_width}x{new_height}")
+        
+        adapter_list = ["lcm", ]
+        adapter_weights = [1.0, ]
+        
+        lora_key = self._select_lora_by_prompt(prompt)
+        if lora_key and lora_key in STYLIZATION_LORA_CONFIG:
+            lora_config = STYLIZATION_LORA_CONFIG[lora_key]
+            # print(f"Loading style LoRA: {lora_key}...")
+            
+            try:
+                # 从 Hugging Face 加载 LoRA（会自动下载和缓存）
+                self.pipe.load_lora_weights(
+                    lora_config["lora_id"],
+                    filename=lora_config["filename"],
+                    adapter_name=lora_config["adapter_name"],
+                )
+                adapter_list.append(lora_config["adapter_name"])
+                adapter_weights.append(lora_config["lora_weight"])
+                # print(f"Successfully loaded LoRA: {lora_key}")
+            except Exception as e:
+                print(f"Failed to load LoRA {lora_key}")
+        
+        self.pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
+        print(f"Active adapters: {self.pipe.get_active_adapters()}")
 
         # 3. 语义分割预处理
         print("Processing semantic segmentation...")
@@ -264,24 +362,25 @@ class Predictor(BasePredictor):
             items_list=segment_items,
             items_to_remove=self.control_items,
         )
-        mask = np.zeros_like(real_seg)
-        for color in chosen_colors:
-            color_matches = (real_seg == color).all(axis=2)
-            mask[color_matches] = 1
+        
+        # 反转逻辑：标记整个房间，然后移除保护区域
+        mask = np.ones_like(real_seg)  # 先全部标记为 1（要重绘）
+        # 移除保护区域（control_items）
+        for color, item in zip(unique_colors, segment_items):
+            if item in self.control_items:  # 如果是保护项
+                color_matches = (real_seg == color).all(axis=2)
+                mask[color_matches] = 0  # 标记为 0（不重绘）
 
         segmentation_cond_image = Image.fromarray(real_seg).convert("RGB")
         mask_image = Image.fromarray((mask * 255).astype(np.uint8)).convert("RGB")
 
-        # 4. MLSD 预处理
+        # MLSD 预处理
         print("Processing MLSD...")
         mlsd_img = self.mlsd_processor(init_image)
         mlsd_img = mlsd_img.resize(init_image.size)
 
-        # 3. Ensure LCM adapter is active (no extra LoRA)
-        self.pipe.set_adapters(["lcm"], adapter_weights=[1.0])
-
-        # 4. Run Inference
-        result_image = self.pipe(
+        # Run Inference
+        result_images = self.pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=init_image,
@@ -294,10 +393,23 @@ class Predictor(BasePredictor):
             controlnet_conditioning_scale=[0.4, 0.2],
             control_guidance_start=[0, 0.1],
             control_guidance_end=[0.5, 0.25],
-        ).images[0]
+            num_images_per_prompt=num_images,
+        ).images
 
-        # 5. Save Output
-        output_path = f"/tmp/out.{output_format}"
-        result_image.save(output_path, quality=output_quality)
+        # Save Output
+        output_paths = []
+        for i, result_image in enumerate(result_images):
+            if num_images > 1:
+                output_path = f"/tmp/out_{i+1}.{output_format}"
+            else:
+                output_path = f"/tmp/out.{output_format}"
+            result_image.save(output_path, quality=output_quality)
+            output_paths.append(Path(output_path))
+            print(f"Saved image {i+1}/{num_images}: {output_path}")
         
-        return Path(output_path)
+        return output_paths
+    
+        # output_path = f"/tmp/out.{output_format}"
+        # result_image.save(output_path, quality=output_quality)
+        
+        # return Path(output_path)
