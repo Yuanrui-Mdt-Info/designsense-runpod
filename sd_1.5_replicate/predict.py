@@ -325,6 +325,8 @@ class Predictor(BasePredictor):
         init_image = init_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
         print(f"Input image resized to: {new_width}x{new_height}")
         
+        # 先禁用所有适配器，清理之前的状态
+        self.pipe.disable_adapters()
         adapter_list = ["lcm", ]
         adapter_weights = [1.0, ]
         

@@ -333,6 +333,7 @@ def generate_image_controlnet(
         # cache_dir="model_cache" # 不指定 cache_dir，使用默认的 HF 缓存（会自动持久化）
     )
     
+    pipe.disable_adapters()
     adapter_list = ["lcm", ]
     adapter_weights = [1.0, ]
     
