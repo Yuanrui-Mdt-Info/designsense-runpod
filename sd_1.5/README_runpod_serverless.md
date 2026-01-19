@@ -19,9 +19,6 @@ docker push your-registry/sd15-interior-design:v1
 1. 创建新的 Serverless Endpoint
 2. 使用你的 Docker 镜像
 3. 配置 GPU（推荐 RTX 4090 或 A100 40GB）
-4. 附加网络卷挂载到 `/runpod-volume`
-5. 设置环境变量 `HF_HOME=/runpod-volume/huggingface`
-6. 设置超时时间为 300 秒
 
 ## API 使用示例
 
@@ -37,14 +34,18 @@ docker push your-registry/sd15-interior-design:v1
     "num_inference_steps": 6,
     "seed": 42
   }
-}### 响应格式
+}
+
+### 响应格式
 
 {
   "output_image_base64": "...",
   "prompt": "modern interior design...",
   "seed": 42,
   "size": "768x512"
-}## 支持的风格 LoRA
+}
+
+## 支持的风格 LoRA
 
 模型会根据 prompt 自动加载对应的风格 LoRA：
 

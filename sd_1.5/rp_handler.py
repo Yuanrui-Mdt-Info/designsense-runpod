@@ -249,6 +249,9 @@ def handler(event):
         num_inference_steps = input_data.get("num_inference_steps", 6)
         seed = input_data.get("seed", None)
         
+        num_images = input_data.get("num_images", 1)
+        num_images = max(1, min(4, num_images))  # 限制 1-4
+        
         # 解析图片输入
         image_base64 = input_data.get("image_base64")
         if not image_base64:
@@ -343,7 +346,7 @@ def handler(event):
 
         # 运行推理
         print(f"[Handler] Generating: '{prompt}'")
-        result_image = pipe(
+        result_images = pipe(
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=init_image,
@@ -356,18 +359,22 @@ def handler(event):
             controlnet_conditioning_scale=[0.4, 0.2],
             control_guidance_start=[0, 0.1],
             control_guidance_end=[0.5, 0.25],
-        ).images[0]
+            num_images_per_prompt=num_images,
+        ).images
 
         # 编码输出图片
-        buf = BytesIO()
-        result_image.save(buf, format="PNG")
-        img_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+        output_images = []
+        for i, result_image in enumerate(result_images):
+            buf = BytesIO()
+            result_image.save(buf, format="PNG")
+            img_str = base64.b64encode(buf.getvalue()).decode("utf-8")
+            output_images.append(img_str)
 
         return {
-            "output_image_base64": img_str,
-            "prompt": prompt,
             "seed": seed,
-            "size": f"{new_width}x{new_height}"
+            "num_images": len(output_images),
+            "size": f"{new_width}x{new_height}",
+            "output_images_base64": output_images,
         }
 
     except Exception as e:
