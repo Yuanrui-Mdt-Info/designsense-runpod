@@ -12,7 +12,9 @@
 
 cd sd_1.5
 docker build --platform linux/amd64 -t your-registry/sd15-interior-design:v1 .
-docker push your-registry/sd15-interior-design:v1## RunPod 配置
+docker push your-registry/sd15-interior-design:v1
+
+## RunPod 配置
 
 1. 创建新的 Serverless Endpoint
 2. 使用你的 Docker 镜像
