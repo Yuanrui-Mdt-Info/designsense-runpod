@@ -9,6 +9,7 @@ from diffusers import (
     EulerDiscreteScheduler,
     LCMScheduler,
     ControlNetModel,
+    AutoencoderKL,
 )
 from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 try:
@@ -253,6 +254,25 @@ def segment_image(image, seg_image_processor, image_segmentor):
     return seg_image
 
 
+def _select_lora_by_prompt(prompt: str):
+    """根据 prompt 选择对应的 LoRA 配置"""
+    prompt_lower = prompt.lower()
+    
+    # 匹配逻辑
+    if "floor plan" in prompt_lower and "interior" in prompt_lower:
+        return "floor_plan_interior"
+    elif "clothing store" in prompt_lower:
+        return "clothing_store_interior"
+    elif "cyberpunk" in prompt_lower and "interior" in prompt_lower:
+        return "cyberpunk_interior"
+    elif "tropical" in prompt_lower and "exterior" in prompt_lower:
+        return "tropical_exterior"
+    elif "tropical" in prompt_lower and "interior" in prompt_lower:
+        return "tropical_interior"
+    
+    return None
+
+
 def generate_image_controlnet(
     prompt, 
     image_path, 
@@ -303,8 +323,14 @@ def generate_image_controlnet(
     
     # 加载 Pipeline
     print(f"正在加载基础模型: {BASE_MODEL_ID}...")
+    vae = AutoencoderKL.from_pretrained(
+        "stabilityai/sd-vae-ft-mse",
+        torch_dtype=torch.float16
+    )
+    
     pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         BASE_MODEL_ID,
+        vae=vae,
         controlnet=controlnet,
         safety_checker=None,
         torch_dtype=torch.float16,
@@ -324,8 +350,11 @@ def generate_image_controlnet(
     adapter_list = ["lcm", ]
     adapter_weights = [1.0, ]
     
-    if "cyberpunk" in prompt and "interior" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["cyberpunk_interior"]
+    lora_key = _select_lora_by_prompt(prompt)
+    if lora_key and lora_key in STYLIZATION_LORA_CONFIG:
+        lora_config = STYLIZATION_LORA_CONFIG[lora_key]
+        print(f"正在加载风格 LoRA: {lora_key}...")
+        
         try:
             pipe.load_lora_weights(
                 lora_config["lora_id"],
@@ -334,90 +363,15 @@ def generate_image_controlnet(
             )
             adapter_list.append(lora_config["adapter_name"])
             adapter_weights.append(lora_config["lora_weight"])
+            print(f"成功加载 LoRA: {lora_key}")
         except Exception as e:
             error_msg = str(e)
             if "already in use" in error_msg:
-                print(f"LoRA cyberpunk_interior already loaded, reusing...")
+                print(f"LoRA {lora_key} 已加载，重用中...")
                 adapter_list.append(lora_config["adapter_name"])
                 adapter_weights.append(lora_config["lora_weight"])
             else:
-                print(f"Failed to load LoRA cyberpunk_interior: {error_msg}")
-    
-    if "floor plan" in prompt and "interior" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["floor_plan_interior"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA floor_plan_interior already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA floor_plan_interior: {error_msg}")
-    
-    if "clothing store" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["clothing_store_interior"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA clothing_store_interior already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA clothing_store_interior: {error_msg}")
-    
-    if "tropical" in prompt and "exterior" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["tropical_exterior"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA tropical_exterior already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA tropical_exterior: {error_msg}")
-    
-    if "tropical" in prompt and "interior" in prompt:
-        lora_config = STYLIZATION_LORA_CONFIG["tropical_interior"]
-        try:
-            pipe.load_lora_weights(
-                lora_config["lora_id"],
-                weight_name=lora_config["filename"],
-                adapter_name=lora_config["adapter_name"],
-            )
-            adapter_list.append(lora_config["adapter_name"])
-            adapter_weights.append(lora_config["lora_weight"])
-        except Exception as e:
-            error_msg = str(e)
-            if "already in use" in error_msg:
-                print(f"LoRA tropical_interior already loaded, reusing...")
-                adapter_list.append(lora_config["adapter_name"])
-                adapter_weights.append(lora_config["lora_weight"])
-            else:
-                print(f"Failed to load LoRA tropical_interior: {error_msg}")
+                print(f"加载 LoRA {lora_key} 失败: {error_msg}")
     
     pipe.set_adapters(adapter_list, adapter_weights=adapter_weights)
     
