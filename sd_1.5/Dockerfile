@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -14,7 +14,7 @@ WORKDIR /workspace
 
 # 安装 PyTorch (CUDA 12.1)
 RUN pip install torch==2.9.1 torchvision==0.24.1 \
-    --index-url https://download.pytorch.org/whl/cu121
+    --index-url https://download.pytorch.org/whl/cu128
 
 # 安装 Python 依赖
 COPY requirements.txt .
