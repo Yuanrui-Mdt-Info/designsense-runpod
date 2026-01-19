@@ -4,7 +4,7 @@
 import os
 import torch
 from cog import BasePredictor, Input, Path
-from diffusers import StableDiffusionControlNetInpaintPipeline, LCMScheduler, ControlNetModel
+from diffusers import StableDiffusionControlNetInpaintPipeline, LCMScheduler, ControlNetModel, AutoencoderKL
 from transformers import AutoImageProcessor, SegformerForSemanticSegmentation
 from controlnet_aux import MLSDdetector
 from PIL import Image
@@ -132,6 +132,12 @@ def map_colors_rgb(color: tuple) -> str:
 
 class Predictor(BasePredictor):
     def setup(self) -> None:
+        print("Loading VAE...")
+        vae = AutoencoderKL.from_pretrained(
+            "stabilityai/sd-vae-ft-mse",
+            torch_dtype=torch.float16
+        )
+        
         controlnet = [
             ControlNetModel.from_pretrained(
                 "BertChristiaens/controlnet-seg-room", torch_dtype=torch.float16
@@ -146,6 +152,7 @@ class Predictor(BasePredictor):
         # 直接加载构建阶段下载好的模型
         self.pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
             BASE_MODEL_ID,
+            vae=vae,
             controlnet=controlnet,
             safety_checker=None,
             torch_dtype=torch.float16,
@@ -189,12 +196,12 @@ class Predictor(BasePredictor):
         prompt_lower = prompt.lower()
         
         # 匹配逻辑与 inference.py 保持一致
-        if "cyberpunk" in prompt_lower and "interior" in prompt_lower:
-            return "cyberpunk_interior"
-        elif "floor plan" in prompt_lower and "interior" in prompt_lower:
+        if "floor plan" in prompt_lower and "interior" in prompt_lower:
             return "floor_plan_interior"
         elif "clothing store" in prompt_lower:
             return "clothing_store_interior"
+        elif "cyberpunk" in prompt_lower and "interior" in prompt_lower:
+            return "cyberpunk_interior"
         elif "tropical" in prompt_lower and "exterior" in prompt_lower:
             return "tropical_exterior"
         elif "tropical" in prompt_lower and "interior" in prompt_lower:
