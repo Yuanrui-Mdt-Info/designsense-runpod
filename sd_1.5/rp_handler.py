@@ -317,12 +317,12 @@ def handler(event):
         unique_colors = [tuple(color) for color in unique_colors]
         segment_items = [map_colors_rgb(i) for i in unique_colors]
         
-        # 生成 mask
-        chosen_colors, segment_items = filter_items(
-            colors_list=unique_colors,
-            items_list=segment_items,
-            items_to_remove=control_items,
-        )
+        # # 生成 mask
+        # chosen_colors, segment_items = filter_items(
+        #     colors_list=unique_colors,
+        #     items_list=segment_items,
+        #     items_to_remove=control_items,
+        # )
         
         mask = np.ones_like(real_seg)
         for color, item in zip(unique_colors, segment_items):
