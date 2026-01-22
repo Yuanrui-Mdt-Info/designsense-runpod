@@ -32,17 +32,17 @@ docker push your-registry/sd15-interior-design:v1
     "strength": 0.5,
     "guidance_scale": 1.5,
     "num_inference_steps": 6,
-    "seed": 42
+    "num_images": 1
   }
 }
 
 ### 响应格式
 
 {
-  "output_image_base64": "...",
-  "prompt": "modern interior design...",
   "seed": 42,
-  "size": "768x512"
+  "num_images": 1,
+  "size": "768x512",
+  "output_images_base64": ["<base64_string_1>", "<base64_string_2>", ...]
 }
 
 ## 支持的风格 LoRA
